@@ -1,0 +1,28 @@
+.case-item {
+  transition: background-color 0.1s;
+}
+
+.case-item:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.case-item.selected {
+  background-color: rgba(59, 130, 246, 0.08);
+  border-left: 2px solid #3b82f6;
+  padding-left: calc(0.75rem - 2px);
+}
+
+.case-item:last-child {
+  border-bottom: none;
+}
+
+.panel:fullscreen {
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+}
+
+.panel:fullscreen .flex-1 {
+  flex: 1;
+  overflow: hidden;
+}

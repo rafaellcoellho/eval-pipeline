@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Sessões — Eval Pipeline{% endblock %}
+
+{% block head %}<link rel="stylesheet" href="/static/css/sessions/sessions.css" />{% endblock %}
+
+{% block header_back %}
+<a href="/" class="text-gray-500 hover:text-gray-300 transition-colors">
+  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+</a>
+{% endblock %}
+
+{% block header_title %}Sessões de Execução{% endblock %}
+
+{% block content %}
+<main class="px-8 py-6">
+  <div class="bg-gray-900 rounded-lg border border-gray-800 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-800">
+      <h2 class="text-sm font-medium text-gray-300">Sessões</h2>
+    </div>
+    <table class="w-full text-sm text-left">
+      <thead>
+        <tr class="bg-gray-800/50 text-xs text-gray-500 uppercase tracking-wider">
+          <th class="px-6 py-3 font-medium">ID</th>
+          <th class="px-6 py-3 font-medium">Casos</th>
+          <th class="px-6 py-3 font-medium">Horário</th>
+          <th class="px-6 py-3 font-medium w-16 text-right">Ver</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for session in sessions %}
+        <tr class="border-t border-gray-800 transition-colors duration-100">
+          <td class="px-6 py-3.5 font-mono text-gray-300">{{ session.session_id }}</td>
+          <td class="px-6 py-3.5 text-gray-400">{{ session.case_count }}</td>
+          <td class="px-6 py-3.5 text-gray-400">{{ session.timestamp[:4] }}-{{ session.timestamp[4:6] }}-{{ session.timestamp[6:8] }} {{ session.timestamp[8:10] }}:{{ session.timestamp[10:12] }}</td>
+          <td class="px-6 py-3.5 text-right">
+            <a href="/sessions/{{ session.session_id }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Ver detalhes">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if not sessions %}
+        <tr>
+          <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500">Nenhuma sessão encontrada.</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</main>
+{% endblock %}
+
+{% block scripts %}<script>lucide.createIcons();</script>{% endblock %}

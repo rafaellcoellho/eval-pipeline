@@ -8,7 +8,8 @@ from pathlib import Path
 
 import requests
 from loguru import logger
-from settings import Settings
+
+from eval_pipeline.settings import Settings
 
 POLLING_INTERVAL_SECONDS = 3
 

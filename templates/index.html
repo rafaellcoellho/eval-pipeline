@@ -1,97 +1,42 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eval Pipeline</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.47.0/min/vs/loader.min.js"></script>
-    <link rel="stylesheet" href="/static/css/index.css" />
-  </head>
-  <body class="bg-gray-950 text-gray-200 font-sans min-h-screen">
+{% extends "base.html" %}
 
-    <header class="bg-gray-900 border-b border-gray-800 px-8 py-4">
-      <h1 class="text-lg font-semibold tracking-tight text-gray-100">Eval Pipeline</h1>
-    </header>
+{% block title %}Eval Pipeline{% endblock %}
+{% block body_class %}flex flex-col{% endblock %}
 
-    <main class="px-8 py-6 flex flex-col gap-4">
+{% block content %}
+<main class="flex-1 flex items-center justify-center px-8 py-16">
+  <div class="grid grid-cols-2 gap-6 w-full max-w-2xl">
 
-      <div id="viewer" class="hidden bg-gray-900 rounded-lg border border-gray-800 shadow-sm overflow-hidden">
-        <div class="flex gap-4 h-[50vh] p-4">
-          <div class="flex-1 h-full flex flex-col rounded-lg border border-gray-700 overflow-hidden">
-            <div class="px-4 py-2.5 bg-gray-800 border-b border-gray-700 flex items-center justify-between shrink-0">
-              <span id="pdf-filename-label" class="text-xs font-medium text-gray-400 font-mono"></span>
-              <div class="flex items-center gap-3">
-                <span id="viewer-case-label" class="text-xs text-gray-500 font-mono"></span>
-                <button id="pdf-fullscreen-btn" class="fullscreen-btn inline-flex items-center justify-center w-6 h-6 rounded text-gray-500 hover:text-gray-300 hover:bg-gray-700 transition-colors" title="Tela cheia">
-                  <i data-lucide="maximize-2" class="icon-expand w-3.5 h-3.5"></i>
-                  <i data-lucide="minimize-2" class="icon-compress w-3.5 h-3.5 hidden"></i>
-                </button>
-              </div>
-            </div>
-            <div class="flex-1 overflow-hidden">
-              <iframe id="pdf-frame" class="w-full h-full" src=""></iframe>
-            </div>
-          </div>
-          <div class="flex-1 h-full flex flex-col rounded-lg border border-gray-700 overflow-hidden">
-            <div class="px-4 py-2.5 bg-gray-800 border-b border-gray-700 flex items-center justify-between shrink-0">
-              <span id="resultado-filename-label" class="text-xs font-medium text-gray-400 font-mono"></span>
-              <div class="flex items-center gap-3">
-                <span id="viewer-json-case-label" class="text-xs text-gray-500 font-mono"></span>
-                <button id="json-fullscreen-btn" class="fullscreen-btn inline-flex items-center justify-center w-6 h-6 rounded text-gray-500 hover:text-gray-300 hover:bg-gray-700 transition-colors" title="Tela cheia">
-                  <i data-lucide="maximize-2" class="icon-expand w-3.5 h-3.5"></i>
-                  <i data-lucide="minimize-2" class="icon-compress w-3.5 h-3.5 hidden"></i>
-                </button>
-              </div>
-            </div>
-            <div class="flex-1 overflow-hidden">
-              <div id="json-editor" class="w-full h-full"></div>
-            </div>
-          </div>
-        </div>
+    <a href="/golden-cases" class="nav-card group bg-gray-900 border border-gray-800 rounded-xl p-8 flex flex-col gap-4 hover:border-gray-600 transition-colors">
+      <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+        <i data-lucide="folder-open" class="w-5 h-5"></i>
       </div>
-
-      <div class="bg-gray-900 rounded-lg border border-gray-800 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-          <h2 class="text-sm font-medium text-gray-300">Golden Cases</h2>
-          <span class="text-xs text-gray-500">{{ cases | length }} caso{{ 's' if cases | length != 1 else '' }}</span>
-        </div>
-        <table class="w-full text-sm text-left">
-          <thead>
-            <tr class="bg-gray-800/50 text-xs text-gray-500 uppercase tracking-wider">
-              <th class="px-6 py-3 font-medium">Nome</th>
-              <th class="px-6 py-3 font-medium w-16 text-right">Ver</th>
-            </tr>
-          </thead>
-          <tbody id="cases-body">
-            {% for case in cases %}
-            <tr
-              class="border-t border-gray-800 transition-colors duration-100"
-              data-case-name="{{ case.name }}"
-              data-pdf-filename="{{ case.pdf_filename }}"
-              data-resultado-filename="{{ case.resultado_filename }}"
-              data-resultado="{{ case.resultado | e }}"
-            >
-              <td class="px-6 py-3.5 font-mono text-gray-300">{{ case.name }}</td>
-              <td class="px-6 py-3.5 text-right">
-                <button class="eye-btn inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Visualizar">
-                  <i data-lucide="eye" class="w-4 h-4"></i>
-                </button>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        {% if not cases %}
-        <div class="px-6 py-10 text-center text-sm text-gray-500">
-          Nenhum caso encontrado em <code class="bg-gray-800 px-1 rounded text-gray-400">golden_cases</code>.
-        </div>
-        {% endif %}
+      <div>
+        <h2 class="text-base font-semibold text-gray-100 group-hover:text-white transition-colors">Golden Cases</h2>
+        <p class="text-sm text-gray-500 mt-1">Inspecione os casos de teste e seus resultados esperados</p>
       </div>
+      <div class="mt-auto flex items-center gap-1.5 text-xs text-gray-600 group-hover:text-gray-400 transition-colors">
+        <span>Abrir</span>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </div>
+    </a>
 
-    </main>
+    <a href="/sessions" class="nav-card group bg-gray-900 border border-gray-800 rounded-xl p-8 flex flex-col gap-4 hover:border-gray-600 transition-colors">
+      <div class="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400">
+        <i data-lucide="history" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h2 class="text-base font-semibold text-gray-100 group-hover:text-white transition-colors">Sessões de Execução</h2>
+        <p class="text-sm text-gray-500 mt-1">Analise os resultados das execuções do pipeline de avaliação</p>
+      </div>
+      <div class="mt-auto flex items-center gap-1.5 text-xs text-gray-600 group-hover:text-gray-400 transition-colors">
+        <span>Abrir</span>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </div>
+    </a>
 
-    <script src="/static/js/index.js"></script>
-  </body>
-</html>
+  </div>
+</main>
+{% endblock %}
+
+{% block scripts %}<script>lucide.createIcons();</script>{% endblock %}

@@ -1,0 +1,49 @@
+import json
+
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import FileResponse, HTMLResponse
+
+from eval_pipeline.utils.settings import get_settings
+from eval_pipeline.views.golden_cases import GoldenCasesView
+
+router = APIRouter()
+
+
+@router.get("/golden-cases", response_class=HTMLResponse)
+def golden_cases_page(request: Request) -> HTMLResponse:
+    return GoldenCasesView(request).render()
+
+
+@router.get("/cases/{case_name}/pdf")
+def serve_pdf(case_name: str) -> FileResponse:
+    case_dir = get_settings().path_data_files / "golden_cases" / case_name
+    pdfs = list(case_dir.glob("*.pdf"))
+
+    if not pdfs:
+        raise HTTPException(
+            status_code=404, detail=f"PDF não encontrado para o caso: {case_name}"
+        )
+
+    return FileResponse(pdfs[0], media_type="application/pdf")
+
+
+@router.get("/cases/{case_name}/resultado")
+def get_resultado(case_name: str) -> dict:
+    path = (
+        get_settings().path_data_files / "golden_cases" / case_name / "resultado.json"
+    )
+
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="resultado.json não encontrado")
+
+    return json.loads(path.read_text())
+
+
+@router.get("/cases/{case_name}/processed/{filename}")
+def get_processed_result(case_name: str, filename: str) -> dict:
+    file_path = get_settings().path_data_files / "processed" / case_name / filename
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Resultado não encontrado")
+
+    return json.loads(file_path.read_text())
