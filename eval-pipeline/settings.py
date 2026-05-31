@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,3 +13,9 @@ class Settings(BaseSettings):
     url_base_servico_processamento: str
     endpoint_upload: str
     endpoint_resultado: str
+    path_data_files: Path
+
+    @field_validator("path_data_files", mode="before")
+    @classmethod
+    def expand_path(cls, v: str) -> Path:
+        return Path(v).expanduser()

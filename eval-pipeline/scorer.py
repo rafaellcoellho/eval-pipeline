@@ -4,24 +4,27 @@ from pathlib import Path
 
 from loguru import logger
 
-
-DATASET_PATH = Path(__file__).parent.parent / "dataset_golden_cases"
-RESULTS_PATH = Path(__file__).parent.parent / "resultados_processamentos"
-ANALYSES_PATH = Path(__file__).parent.parent / "analises_resultados"
+from settings import Settings
 
 
 class Scorer:
     def __init__(self, session_id: str) -> None:
+        settings = Settings()
+
+        data_root = settings.path_data_files
+        self.dataset_path = data_root / "golden_cases"
+        self.results_path = data_root / "processed"
+        self.analyses_path = data_root / "analysis"
         self.session_id = session_id
 
         logger.info(f"Scorer iniciado. session_id={session_id}")
-        logger.info(f"Dataset: {DATASET_PATH}")
-        logger.info(f"Resultados: {RESULTS_PATH}")
-        logger.info(f"Análises: {ANALYSES_PATH}")
+        logger.info(f"Dataset: {self.dataset_path}")
+        logger.info(f"Resultados: {self.results_path}")
+        logger.info(f"Análises: {self.analyses_path}")
 
     def run(self) -> None:
-        case_dirs = [d for d in sorted(RESULTS_PATH.iterdir()) if d.is_dir()]
-        logger.info(f"Pastas em resultados_processamentos: {len(case_dirs)}")
+        case_dirs = [d for d in sorted(self.results_path.iterdir()) if d.is_dir()]
+        logger.info(f"Pastas em processed: {len(case_dirs)}")
 
         for case_dir in case_dirs:
             result_file = self._find_session_result(case_dir)
@@ -33,7 +36,7 @@ class Scorer:
 
             expected = self._load_expected(case_dir.name)
             if expected is None:
-                logger.warning(f"[{case_dir.name}] resultado.json não encontrado em dataset_golden_cases, pulando.")
+                logger.warning(f"[{case_dir.name}] resultado.json não encontrado em golden_cases, pulando.")
                 continue
 
             obtained = json.loads(result_file.read_text())
@@ -47,7 +50,7 @@ class Scorer:
         return matches[0] if matches else None
 
     def _load_expected(self, case_name: str) -> dict | None:
-        expected_path = DATASET_PATH / case_name / "resultado.json"
+        expected_path = self.dataset_path / case_name / "resultado.json"
 
         if not expected_path.exists():
             return None
@@ -72,7 +75,7 @@ class Scorer:
         return analysis
 
     def _save_analysis(self, case_name: str, analysis: dict) -> None:
-        output_dir = ANALYSES_PATH / case_name
+        output_dir = self.analyses_path / case_name
         output_dir.mkdir(parents=True, exist_ok=True)
 
         timestamp = datetime.now().strftime("%Y%m%d%H%M")

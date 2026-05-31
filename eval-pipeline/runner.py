@@ -13,15 +13,15 @@ from settings import Settings
 
 
 POLLING_INTERVAL_SECONDS = 3
-DATASET_PATH = Path(__file__).parent.parent / "dataset_golden_cases"
-RESULTS_PATH = Path(__file__).parent.parent / "resultados_processamentos"
 
 
 class EvalPipelineRunner:
     def __init__(self) -> None:
         settings = Settings()
 
-        self.dataset_path = DATASET_PATH
+        data_root = settings.path_data_files
+        self.dataset_path = data_root / "golden_cases"
+        self.results_path = data_root / "processed"
         self.api_base_url = settings.url_base_servico_processamento.rstrip("/")
         self.upload_endpoint = settings.endpoint_upload
         self.result_endpoint = settings.endpoint_resultado
@@ -29,7 +29,7 @@ class EvalPipelineRunner:
 
         logger.info(f"Runner iniciado. session_id={self.session_id}")
         logger.info(f"Dataset: {self.dataset_path}")
-        logger.info(f"Resultados: {RESULTS_PATH}")
+        logger.info(f"Resultados: {self.results_path}")
         logger.info(f"API: {self.api_base_url}")
 
     def run(self) -> None:
@@ -101,7 +101,7 @@ class EvalPipelineRunner:
         return pdfs[0] if pdfs else None
 
     def _salvar_resultado(self, ticket: str, case_name: str, payload: dict) -> None:
-        output_dir = RESULTS_PATH / case_name
+        output_dir = self.results_path / case_name
         output_dir.mkdir(parents=True, exist_ok=True)
 
         timestamp = datetime.now().strftime("%Y%m%d%H%M")
