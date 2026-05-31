@@ -3,7 +3,6 @@ from datetime import datetime
 from pathlib import Path
 
 from loguru import logger
-
 from settings import Settings
 
 
@@ -29,14 +28,18 @@ class Scorer:
         for case_dir in case_dirs:
             result_file = self._find_session_result(case_dir)
             if result_file is None:
-                logger.debug(f"[{case_dir.name}] Nenhum resultado para session_id={self.session_id}, pulando.")
+                logger.debug(
+                    f"[{case_dir.name}] Nenhum resultado para session_id={self.session_id}, pulando."
+                )
                 continue
 
             logger.info(f"[{case_dir.name}] Resultado encontrado: {result_file.name}")
 
             expected = self._load_expected(case_dir.name)
             if expected is None:
-                logger.warning(f"[{case_dir.name}] resultado.json não encontrado em golden_cases, pulando.")
+                logger.warning(
+                    f"[{case_dir.name}] resultado.json não encontrado em golden_cases, pulando."
+                )
                 continue
 
             obtained = json.loads(result_file.read_text())
@@ -70,7 +73,9 @@ class Scorer:
                 "status": status,
             }
 
-            logger.debug(f"  {key}: esperado={valor_esperado!r} obtido={valor_obtido!r} -> {status}")
+            logger.debug(
+                f"  {key}: esperado={valor_esperado!r} obtido={valor_obtido!r} -> {status}"
+            )
 
         return analysis
 

@@ -5,7 +5,6 @@ from fastapi.staticfiles import StaticFiles
 
 from eval_pipeline.routers import cases, index
 
-
 STATIC_PATH = Path(__file__).parent.parent / "static"
 
 app = FastAPI(title="eval pipeline")

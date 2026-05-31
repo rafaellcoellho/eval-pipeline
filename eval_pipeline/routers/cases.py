@@ -3,7 +3,6 @@ from fastapi.responses import FileResponse
 
 from eval_pipeline.utils.settings import get_settings
 
-
 router = APIRouter(prefix="/cases")
 
 
@@ -13,6 +12,8 @@ def serve_pdf(case_name: str) -> FileResponse:
     pdfs = list(case_dir.glob("*.pdf"))
 
     if not pdfs:
-        raise HTTPException(status_code=404, detail=f"PDF não encontrado para o caso: {case_name}")
+        raise HTTPException(
+            status_code=404, detail=f"PDF não encontrado para o caso: {case_name}"
+        )
 
     return FileResponse(pdfs[0], media_type="application/pdf")

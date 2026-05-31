@@ -36,7 +36,6 @@ def _derivar_matricula(ticket: str) -> str:
     return str(int(ticket[:8], 16) % 900_000 + 100_000)
 
 
-
 @app.post("/processar-arquivo", response_model=ProcessarArquivoResponse)
 def processar_arquivo(body: ProcessarArquivoRequest) -> ProcessarArquivoResponse:
     ticket = _gerar_ticket(body.arquivo_base64)
@@ -50,7 +49,9 @@ def consultar_resultado(body: ConsultarResultadoRequest) -> ConsultarResultadoRe
     criado_em = _tickets.get(body.ticket)
 
     if criado_em is None:
-        raise HTTPException(status_code=404, detail=f"Ticket não encontrado: {body.ticket}")
+        raise HTTPException(
+            status_code=404, detail=f"Ticket não encontrado: {body.ticket}"
+        )
 
     elapsed = time.monotonic() - criado_em
 

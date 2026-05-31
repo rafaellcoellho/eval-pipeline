@@ -3,7 +3,6 @@ from fastapi.responses import HTMLResponse
 
 from eval_pipeline.views.index import IndexView
 
-
 router = APIRouter()
 
 

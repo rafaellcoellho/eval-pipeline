@@ -26,16 +26,24 @@ class IndexView:
                 continue
 
             resultado_path = case_dir / "resultado.json"
-            resultado = json.loads(resultado_path.read_text()) if resultado_path.exists() else {}
+            resultado = (
+                json.loads(resultado_path.read_text())
+                if resultado_path.exists()
+                else {}
+            )
 
             pdfs = list(case_dir.glob("*.pdf"))
             pdf_filename = pdfs[0].name if pdfs else ""
 
-            cases.append({
-                "name": case_dir.name,
-                "pdf_filename": pdf_filename,
-                "resultado_filename": resultado_path.name if resultado_path.exists() else "resultado.json",
-                "resultado": json.dumps(resultado, ensure_ascii=False),
-            })
+            cases.append(
+                {
+                    "name": case_dir.name,
+                    "pdf_filename": pdf_filename,
+                    "resultado_filename": resultado_path.name
+                    if resultado_path.exists()
+                    else "resultado.json",
+                    "resultado": json.dumps(resultado, ensure_ascii=False),
+                }
+            )
 
         return cases
