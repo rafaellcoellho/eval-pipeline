@@ -1,0 +1,5 @@
+__pycache__
+.venv
+.env
+dataset_golden_cases
+resultados_processamentos
