@@ -1,0 +1,24 @@
+tr.selected td {
+  background-color: rgba(59, 130, 246, 0.08);
+  border-left: 2px solid #3b82f6;
+  padding-left: calc(1.5rem - 2px);
+}
+
+tr:not(.selected):hover td {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+#cases-body tr:last-child {
+  border-bottom: none;
+}
+
+.flex-1:fullscreen {
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+}
+
+.flex-1:fullscreen .flex-1 {
+  flex: 1;
+  overflow: hidden;
+}

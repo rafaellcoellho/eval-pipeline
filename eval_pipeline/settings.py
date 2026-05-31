@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     endpoint_upload: str
     endpoint_resultado: str
     path_data_files: Path
+    templates_path: Path = Path(__file__).parent.parent / "templates"
 
     @field_validator("path_data_files", mode="before")
     @classmethod
