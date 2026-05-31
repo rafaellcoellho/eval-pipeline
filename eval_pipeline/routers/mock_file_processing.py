@@ -24,6 +24,10 @@ class ConsultarResultadoResponse(BaseModel):
     numero_matricula: str
 
 
+class ConsultarResultadoRequest(BaseModel):
+    ticket: str
+
+
 def _gerar_ticket(arquivo_base64: str) -> str:
     return hashlib.sha256(arquivo_base64.encode()).hexdigest()
 
@@ -32,16 +36,13 @@ def _derivar_matricula(ticket: str) -> str:
     return str(int(ticket[:8], 16) % 900_000 + 100_000)
 
 
+
 @app.post("/processar-arquivo", response_model=ProcessarArquivoResponse)
 def processar_arquivo(body: ProcessarArquivoRequest) -> ProcessarArquivoResponse:
     ticket = _gerar_ticket(body.arquivo_base64)
     _tickets[ticket] = time.monotonic()
 
     return ProcessarArquivoResponse(ticket=ticket)
-
-
-class ConsultarResultadoRequest(BaseModel):
-    ticket: str
 
 
 @app.post("/consultar-resultado", response_model=ConsultarResultadoResponse)

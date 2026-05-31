@@ -109,7 +109,3 @@ class EvalPipelineRunner:
 
         output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
         logger.success(f"[{case_name}] Resultado salvo em {output_path}")
-
-
-if __name__ == "__main__":
-    EvalPipelineRunner().run()

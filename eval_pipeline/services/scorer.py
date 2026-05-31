@@ -83,13 +83,3 @@ class Scorer:
 
         output_path.write_text(json.dumps(analysis, ensure_ascii=False, indent=2))
         logger.success(f"[{case_name}] Análise salva em {output_path}")
-
-
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) != 2:
-        print("Uso: python scorer.py <session_id>")
-        sys.exit(1)
-
-    Scorer(sys.argv[1]).run()
