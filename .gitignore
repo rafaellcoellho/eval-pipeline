@@ -3,3 +3,4 @@ __pycache__
 .env
 dataset_golden_cases
 resultados_processamentos
+analises_resultados
