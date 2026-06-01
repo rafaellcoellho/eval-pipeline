@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from eval_pipeline.routers import golden_cases, index, sessions
+from eval_pipeline.routers import analysis, golden_cases, index, run, sessions
 
 STATIC_PATH = Path(__file__).parent.parent / "static"
 
@@ -13,3 +13,5 @@ app.mount("/static", StaticFiles(directory=STATIC_PATH), name="static")
 app.include_router(index.router)
 app.include_router(golden_cases.router)
 app.include_router(sessions.router)
+app.include_router(run.router)
+app.include_router(analysis.router)

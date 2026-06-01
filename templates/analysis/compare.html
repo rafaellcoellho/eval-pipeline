@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Comparar Análises — Eval Pipeline{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/analysis/compare.css" />{% endblock %}
+
+{% block header_back %}
+<a href="/analysis" class="text-gray-500 hover:text-gray-300 transition-colors">
+  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+</a>
+{% endblock %}
+{% block header_title %}Comparar Análises{% endblock %}
+
+{% block content %}
+<main class="px-8 py-6 flex flex-col gap-6">
+
+  <div class="flex gap-4">
+    {% for s in comparison.sessions %}
+    <div class="bg-gray-900 border border-gray-800 rounded-lg px-5 py-4 flex flex-col gap-1">
+      <span class="font-mono text-sm text-gray-300">{{ s.session_id }}</span>
+      <div class="flex items-center gap-2 mt-1">
+        <span class="text-2xl font-semibold
+          {% if s.accuracy_pct == 100 %}text-green-400
+          {% elif s.accuracy_pct >= 50 %}text-yellow-400
+          {% else %}text-red-400{% endif %}">
+          {{ s.accuracy_pct }}%
+        </span>
+        <span class="text-xs text-gray-500">{{ s.correct }}/{{ s.total }} acertos</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="bg-gray-900 rounded-lg border border-gray-800 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead>
+          <tr class="bg-gray-800/50 text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800">
+            <th class="px-6 py-3 font-medium">Caso</th>
+            <th class="px-6 py-3 font-medium">Campo</th>
+            <th class="px-6 py-3 font-medium">Esperado</th>
+            {% for s in comparison.sessions %}
+            <th class="px-6 py-3 font-medium font-mono">{{ s.session_id }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% set ns = namespace(prev_case="") %}
+          {% for row in comparison.rows %}
+          <tr class="border-t border-gray-800 {% if row.case_name != ns.prev_case %}first-in-case{% endif %}">
+            <td class="px-6 py-3 font-mono text-gray-400 text-xs">
+              {% if row.case_name != ns.prev_case %}{{ row.case_name }}{% endif %}
+              {% set ns.prev_case = row.case_name %}
+            </td>
+            <td class="px-6 py-3 font-mono text-gray-300">{{ row.campo }}</td>
+            <td class="px-6 py-3 text-gray-400 text-xs">{{ row.valor_esperado }}</td>
+            {% for s in comparison.sessions %}
+            {% set result = row.results[s.session_id] %}
+            <td class="px-6 py-3">
+              {% if result.status == "acerto" %}
+              <span class="inline-flex items-center gap-1 text-xs text-green-400">
+                <i data-lucide="check" class="w-3 h-3"></i>
+                {{ result.valor_obtido }}
+              </span>
+              {% elif result.status == "erro" %}
+              <span class="inline-flex items-center gap-1 text-xs text-red-400">
+                <i data-lucide="x" class="w-3 h-3"></i>
+                {{ result.valor_obtido }}
+              </span>
+              {% else %}
+              <span class="text-xs text-gray-600">—</span>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+{% endblock %}
+
+{% block scripts %}<script>lucide.createIcons();</script>{% endblock %}

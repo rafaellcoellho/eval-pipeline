@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Análises — Eval Pipeline{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/analysis/list.css" />{% endblock %}
+
+{% block header_back %}
+<a href="/" class="text-gray-500 hover:text-gray-300 transition-colors">
+  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+</a>
+{% endblock %}
+{% block header_title %}Análises{% endblock %}
+
+{% block content %}
+<main class="px-8 py-6">
+  <div class="bg-gray-900 rounded-lg border border-gray-800 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+      <h2 class="text-sm font-medium text-gray-300">Sessões Analisadas</h2>
+      <div class="flex items-center gap-3">
+        <span id="selected-count" class="text-xs text-gray-500 hidden">0 selecionadas</span>
+        <button id="compare-btn" disabled class="hidden inline-flex items-center gap-2 px-4 py-1.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium rounded-lg transition-colors">
+          <i data-lucide="git-compare" class="w-3.5 h-3.5"></i>
+          Comparar selecionadas
+        </button>
+      </div>
+    </div>
+    <table class="w-full text-sm text-left">
+      <thead>
+        <tr class="bg-gray-800/50 text-xs text-gray-500 uppercase tracking-wider">
+          <th class="px-4 py-3 w-10"></th>
+          <th class="px-6 py-3 font-medium">ID</th>
+          <th class="px-6 py-3 font-medium">Casos</th>
+          <th class="px-6 py-3 font-medium">Horário</th>
+          <th class="px-6 py-3 font-medium">Acurácia</th>
+          <th class="px-6 py-3 font-medium w-16 text-right">Ver</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for session in sessions %}
+        <tr class="border-t border-gray-800 transition-colors duration-100 hover:bg-gray-800/30">
+          <td class="px-4 py-3 text-center">
+            <input type="checkbox" class="session-checkbox w-4 h-4 rounded accent-violet-500" value="{{ session.session_id }}" />
+          </td>
+          <td class="px-6 py-3.5 font-mono text-gray-300">{{ session.session_id }}</td>
+          <td class="px-6 py-3.5 text-gray-400">{{ session.case_count }}</td>
+          <td class="px-6 py-3.5 text-gray-400">{{ session.timestamp[:4] }}-{{ session.timestamp[4:6] }}-{{ session.timestamp[6:8] }} {{ session.timestamp[8:10] }}:{{ session.timestamp[10:12] }}</td>
+          <td class="px-6 py-3.5">
+            <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full
+              {% if session.accuracy_pct == 100 %}bg-green-500/10 text-green-400
+              {% elif session.accuracy_pct >= 50 %}bg-yellow-500/10 text-yellow-400
+              {% else %}bg-red-500/10 text-red-400{% endif %}">
+              {{ session.accuracy_pct }}%
+            </span>
+          </td>
+          <td class="px-6 py-3.5 text-right">
+            <a href="/analysis/{{ session.session_id }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Ver análise">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if not sessions %}
+        <tr>
+          <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500">Nenhuma análise encontrada. Execute o pipeline para gerar análises.</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/analysis/list.js"></script>
+{% endblock %}

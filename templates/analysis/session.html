@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Análise {{ session.session_id }} — Eval Pipeline{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/analysis/session.css" />{% endblock %}
+{% block body_class %}flex flex-col{% endblock %}
+
+{% block header_back %}
+<a href="/analysis" class="text-gray-500 hover:text-gray-300 transition-colors">
+  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+</a>
+{% endblock %}
+
+{% block header_title %}
+Análise <span class="font-mono text-gray-400 font-normal">{{ session.session_id }}</span>
+<span class="ml-3 text-xs font-normal px-2 py-1 rounded-full
+  {% if session.accuracy_pct == 100 %}bg-green-500/10 text-green-400
+  {% elif session.accuracy_pct >= 50 %}bg-yellow-500/10 text-yellow-400
+  {% else %}bg-red-500/10 text-red-400{% endif %}">
+  {{ session.accuracy_pct }}% acurácia
+</span>
+{% endblock %}
+
+{% block content %}
+<div class="flex-1 flex overflow-hidden">
+
+  <div class="w-56 shrink-0 border-r border-gray-800 flex flex-col bg-gray-900">
+    <div class="px-4 py-2.5 border-b border-gray-800 bg-gray-800/40">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Casos</span>
+    </div>
+    <div class="flex-1 overflow-auto">
+      {% for case in session.cases %}
+      <div
+        class="case-item flex items-center justify-between px-4 py-3 border-b border-gray-800 cursor-pointer"
+        data-case="{{ case.name }}"
+        data-fields="{{ case.fields_json | e }}"
+      >
+        <span class="font-mono text-sm text-gray-300 truncate">{{ case.name }}</span>
+        <span class="shrink-0 ml-2 text-xs font-medium px-1.5 py-0.5 rounded
+          {% if case.accuracy_pct == 100 %}bg-green-500/10 text-green-400
+          {% elif case.accuracy_pct >= 50 %}bg-yellow-500/10 text-yellow-400
+          {% else %}bg-red-500/10 text-red-400{% endif %}">
+          {{ case.accuracy_pct }}%
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="flex-1 flex flex-col overflow-hidden bg-gray-950">
+    <div class="px-6 py-3 border-b border-gray-800 bg-gray-900/50 shrink-0">
+      <span id="case-label" class="text-xs text-gray-500 font-mono">Selecione um caso</span>
+    </div>
+    <div class="flex-1 overflow-auto px-6 py-4">
+      <div id="fields-table" class="hidden">
+        <table class="w-full text-sm text-left">
+          <thead>
+            <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800">
+              <th class="pb-3 font-medium">Campo</th>
+              <th class="pb-3 font-medium">Esperado</th>
+              <th class="pb-3 font-medium">Obtido</th>
+              <th class="pb-3 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody id="fields-body"></tbody>
+        </table>
+      </div>
+      <div id="empty-state" class="flex items-center justify-center h-full text-sm text-gray-600">
+        Selecione um caso para ver os campos
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/analysis/session.js"></script>
+{% endblock %}

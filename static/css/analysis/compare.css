@@ -1,0 +1,8 @@
+tbody tr:last-child {
+  border-bottom: none;
+}
+
+tr.first-in-case td {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}

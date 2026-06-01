@@ -3,7 +3,8 @@ from datetime import datetime
 from pathlib import Path
 
 from loguru import logger
-from settings import Settings
+
+from eval_pipeline.settings import Settings
 
 
 class Scorer:

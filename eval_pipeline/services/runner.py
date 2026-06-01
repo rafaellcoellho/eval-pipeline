@@ -3,6 +3,7 @@ import json
 import threading
 import time
 import uuid
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
@@ -15,7 +16,11 @@ POLLING_INTERVAL_SECONDS = 3
 
 
 class EvalPipelineRunner:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        case_names: list[str] | None = None,
+        on_case_done: Callable[[str], None] | None = None,
+    ) -> None:
         settings = Settings()
 
         data_root = settings.path_data_files
@@ -25,6 +30,8 @@ class EvalPipelineRunner:
         self.upload_endpoint = settings.endpoint_upload
         self.result_endpoint = settings.endpoint_resultado
         self.session_id = uuid.uuid4().hex[:12]
+        self.case_names = case_names
+        self.on_case_done = on_case_done
 
         logger.info(f"Runner iniciado. session_id={self.session_id}")
         logger.info(f"Dataset: {self.dataset_path}")
@@ -32,9 +39,15 @@ class EvalPipelineRunner:
         logger.info(f"API: {self.api_base_url}")
 
     def run(self) -> None:
-        case_dirs = [d for d in sorted(self.dataset_path.iterdir()) if d.is_dir()]
-        logger.info(f"Casos encontrados: {len(case_dirs)}")
+        all_dirs = [d for d in sorted(self.dataset_path.iterdir()) if d.is_dir()]
 
+        case_dirs = (
+            [d for d in all_dirs if d.name in self.case_names]
+            if self.case_names is not None
+            else all_dirs
+        )
+
+        logger.info(f"Casos a processar: {len(case_dirs)}")
         threads = []
 
         for case_dir in case_dirs:
@@ -108,3 +121,6 @@ class EvalPipelineRunner:
 
         output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
         logger.success(f"[{case_name}] Resultado salvo em {output_path}")
+
+        if self.on_case_done:
+            self.on_case_done(case_name)

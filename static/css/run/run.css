@@ -1,0 +1,7 @@
+.case-label:last-child {
+  border-bottom: none;
+}
+
+.case-row:last-child {
+  border-bottom: none;
+}
