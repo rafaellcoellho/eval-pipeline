@@ -75,6 +75,10 @@ class AnalysisView:
             s["accuracy_pct"] = (
                 round(s["correct_fields"] / total * 100) if total > 0 else 0
             )
+            notes_path = analysis_root / f"{s['session_id']}.txt"
+            s["notes"] = (
+                notes_path.read_text(encoding="utf-8") if notes_path.exists() else ""
+            )
 
         return result
 
@@ -148,10 +152,14 @@ class AnalysisView:
         )
         timestamp = first_file.stem.split("_", 1)[1] if first_file else ""
 
+        notes_path = analysis_root / f"{session_id}.txt"
+        notes = notes_path.read_text(encoding="utf-8") if notes_path.exists() else ""
+
         return {
             "session_id": session_id,
             "timestamp": timestamp,
             "cases": cases,
+            "notes": notes,
             "total_fields": total_fields,
             "correct_fields": correct_fields,
             "accuracy_pct": round(correct_fields / total_fields * 100)

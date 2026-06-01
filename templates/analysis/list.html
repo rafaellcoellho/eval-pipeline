@@ -28,10 +28,11 @@
         <tr class="bg-gray-800/50 text-xs text-gray-500 uppercase tracking-wider">
           <th class="px-4 py-3 w-10"></th>
           <th class="px-6 py-3 font-medium">ID</th>
+          <th class="px-6 py-3 font-medium">Anotações</th>
           <th class="px-6 py-3 font-medium">Casos</th>
           <th class="px-6 py-3 font-medium">Horário</th>
           <th class="px-6 py-3 font-medium">Acurácia</th>
-          <th class="px-6 py-3 font-medium w-16 text-right">Ver</th>
+          <th class="px-6 py-3 font-medium w-20 text-right">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -41,6 +42,13 @@
             <input type="checkbox" class="session-checkbox w-4 h-4 rounded accent-violet-500" value="{{ session.session_id }}" />
           </td>
           <td class="px-6 py-3.5 font-mono text-gray-300">{{ session.session_id }}</td>
+          <td class="px-6 py-3.5 max-w-xs">
+            {% if session.notes %}
+            <span class="text-xs text-gray-400 line-clamp-1">{{ session.notes }}</span>
+            {% else %}
+            <span class="text-xs text-gray-600">—</span>
+            {% endif %}
+          </td>
           <td class="px-6 py-3.5 text-gray-400">{{ session.case_count }}</td>
           <td class="px-6 py-3.5 text-gray-400">{{ session.timestamp[:4] }}-{{ session.timestamp[4:6] }}-{{ session.timestamp[6:8] }} {{ session.timestamp[8:10] }}:{{ session.timestamp[10:12] }}</td>
           <td class="px-6 py-3.5">
@@ -52,23 +60,34 @@
             </span>
           </td>
           <td class="px-6 py-3.5 text-right">
-            <a href="/analysis/{{ session.session_id }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Ver análise">
-              <i data-lucide="eye" class="w-4 h-4"></i>
-            </a>
+            <div class="flex items-center justify-end gap-1">
+              <button class="notes-btn inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors"
+                data-session="{{ session.session_id }}"
+                data-notes="{{ session.notes | e }}"
+                title="Anotações">
+                <i data-lucide="pencil-line" class="w-3.5 h-3.5"></i>
+              </button>
+              <a href="/analysis/{{ session.session_id }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Ver análise">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </a>
+            </div>
           </td>
         </tr>
         {% endfor %}
         {% if not sessions %}
         <tr>
-          <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500">Nenhuma análise encontrada. Execute o pipeline para gerar análises.</td>
+          <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-500">Nenhuma análise encontrada. Execute o pipeline para gerar análises.</td>
         </tr>
         {% endif %}
       </tbody>
     </table>
   </div>
 </main>
+
+{% include "analysis/_notes_modal.html" %}
 {% endblock %}
 
 {% block scripts %}
+<script src="/static/js/analysis/notes.js"></script>
 <script src="/static/js/analysis/list.js"></script>
 {% endblock %}

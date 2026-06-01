@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Body, Query, Request
 from fastapi.responses import HTMLResponse
 
+from eval_pipeline.utils.settings import get_settings
 from eval_pipeline.views.analysis import AnalysisView
 
 router = APIRouter()
@@ -22,3 +23,11 @@ def analysis_compare(
 @router.get("/analysis/{session_id}", response_class=HTMLResponse)
 def analysis_session(request: Request, session_id: str) -> HTMLResponse:
     return AnalysisView(request).render_session(session_id)
+
+
+@router.put("/analysis/{session_id}/notes")
+def save_notes(session_id: str, text: str = Body(..., embed=True)) -> dict:
+    notes_path = get_settings().path_data_files / "analysis" / f"{session_id}.txt"
+    notes_path.parent.mkdir(parents=True, exist_ok=True)
+    notes_path.write_text(text, encoding="utf-8")
+    return {"ok": True}

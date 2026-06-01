@@ -20,7 +20,31 @@ Análise <span class="font-mono text-gray-400 font-normal">{{ session.session_id
 </span>
 {% endblock %}
 
+{% block header_actions %}
+<div class="flex items-center gap-2 ml-4">
+  <button id="edit-notes-btn"
+    class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-gray-800 text-gray-400 hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors">
+    <i data-lucide="pencil-line" class="w-3.5 h-3.5"></i>
+    Anotações
+  </button>
+</div>
+{% endblock %}
+
 {% block content %}
+{% if session.notes %}
+<div class="shrink-0 border-b border-gray-800 bg-yellow-500/5 px-6 py-3 flex items-start gap-3" data-session-id="{{ session.session_id }}">
+  <i data-lucide="pencil-line" class="w-3.5 h-3.5 text-yellow-500/70 mt-0.5 shrink-0"></i>
+  <div class="min-w-0 flex-1 overflow-x-auto">
+    <p class="text-xs text-gray-400 whitespace-pre leading-relaxed">{{ session.notes }}</p>
+  </div>
+</div>
+{% else %}
+<div class="shrink-0 border-b border-gray-800 px-6 py-2 flex items-center gap-2" data-session-id="{{ session.session_id }}">
+  <i data-lucide="pencil-line" class="w-3.5 h-3.5 text-gray-700"></i>
+  <span class="text-xs text-gray-600">Sem anotações — clique em "Anotações" para adicionar</span>
+</div>
+{% endif %}
+
 <div class="flex-1 flex overflow-hidden">
 
   <div class="w-56 shrink-0 border-r border-gray-800 flex flex-col bg-gray-900">
@@ -70,6 +94,8 @@ Análise <span class="font-mono text-gray-400 font-normal">{{ session.session_id
     </div>
   </div>
 
+{% include "analysis/_notes_modal.html" %}
+
 </div>
 
 <div id="value-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
@@ -95,5 +121,6 @@ Análise <span class="font-mono text-gray-400 font-normal">{{ session.session_id
 {% endblock %}
 
 {% block scripts %}
+<script src="/static/js/analysis/notes.js"></script>
 <script src="/static/js/analysis/session.js"></script>
 {% endblock %}

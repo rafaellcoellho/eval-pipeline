@@ -1,0 +1,25 @@
+<div id="notes-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+  <div id="notes-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative bg-gray-900 border border-gray-700 rounded-lg w-full max-w-lg flex flex-col mx-4">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-gray-800 shrink-0">
+      <span class="text-sm font-medium text-gray-300">Anotações</span>
+      <button id="notes-close" class="text-gray-500 hover:text-gray-300 transition-colors">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <div class="p-5">
+      <textarea id="notes-textarea" rows="8"
+        placeholder="O que mudou nesta execução? Quais parâmetros foram alterados?"
+        class="w-full bg-gray-800 text-gray-200 text-sm rounded-lg border border-gray-700 px-3 py-2.5 focus:outline-none focus:border-blue-500 resize-none placeholder-gray-600 font-mono leading-relaxed"></textarea>
+    </div>
+    <div class="px-5 py-3 border-t border-gray-800 shrink-0 flex justify-end gap-2">
+      <button id="notes-cancel" class="text-xs px-3 py-1.5 rounded text-gray-400 hover:text-gray-200 transition-colors">
+        Cancelar
+      </button>
+      <button id="notes-save" class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white transition-colors">
+        <i data-lucide="save" class="w-3.5 h-3.5"></i>
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>

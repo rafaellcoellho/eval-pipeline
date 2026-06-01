@@ -1,5 +1,14 @@
 lucide.createIcons();
 
+const { openModal: openNotesModal } = initNotesModal();
+const _notesContainer = document.querySelector("[data-session-id]");
+const _sessionId = _notesContainer ? _notesContainer.dataset.sessionId : null;
+const _currentNotes = _notesContainer ? (_notesContainer.querySelector("p")?.textContent || "") : "";
+
+document.getElementById("edit-notes-btn").addEventListener("click", () => {
+  openNotesModal(_sessionId, _currentNotes);
+});
+
 const TRUNCATE_AT = 80;
 const _entries = [];
 
