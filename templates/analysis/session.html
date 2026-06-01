@@ -76,13 +76,13 @@ Análise <span class="font-mono text-gray-400 font-normal">{{ session.session_id
   <div id="modal-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
   <div class="relative bg-gray-900 border border-gray-700 rounded-lg w-full max-w-2xl max-h-[70vh] flex flex-col mx-4">
     <div class="flex items-center justify-between px-5 py-3 border-b border-gray-800 shrink-0">
-      <span class="text-sm font-medium text-gray-300">Valor completo</span>
+      <span id="modal-title" class="text-sm font-medium text-gray-300">Valor completo</span>
       <button id="modal-close" class="text-gray-500 hover:text-gray-300 transition-colors">
         <i data-lucide="x" class="w-4 h-4"></i>
       </button>
     </div>
     <div class="flex-1 overflow-auto p-5">
-      <pre id="modal-content" class="text-xs text-gray-300 font-mono whitespace-pre-wrap break-all leading-relaxed"></pre>
+      <div id="modal-content-area"></div>
     </div>
     <div class="px-5 py-3 border-t border-gray-800 shrink-0 flex justify-end">
       <button id="modal-copy" class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors">

@@ -97,12 +97,23 @@ class AnalysisView:
             f = matches[0]
             analysis = json.loads(f.read_text())
 
+            golden_root = get_settings().path_data_files / "golden_cases"
+            config_path = golden_root / case_dir.name / "config.json"
+            list_sort_keys: dict[str, str | None] = {}
+            if config_path.exists():
+                list_sort_keys = json.loads(config_path.read_text()).get(
+                    "listSortKeys", {}
+                )
+
             fields = [
                 {
                     "campo": key,
                     "valor_esperado": v["valor_esperado"],
                     "valor_obtido": v["valor_obtido"],
                     "status": v["status"],
+                    "list_sort_key": list_sort_keys.get(key)
+                    if isinstance(v["valor_esperado"], list)
+                    else None,
                 }
                 for key, v in analysis.items()
             ]

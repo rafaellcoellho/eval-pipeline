@@ -43,8 +43,9 @@ class Scorer:
                 )
                 continue
 
+            list_sort_keys = self._load_list_sort_keys(case_dir.name)
             obtained = json.loads(result_file.read_text())
-            analysis = self._compare(expected, obtained)
+            analysis = self._compare(expected, obtained, list_sort_keys)
 
             self._save_analysis(case_dir.name, analysis)
 
@@ -61,24 +62,56 @@ class Scorer:
 
         return json.loads(expected_path.read_text())
 
-    def _compare(self, expected: dict, obtained: dict) -> dict:
+    def _load_list_sort_keys(self, case_name: str) -> dict[str, str | None]:
+        config_path = self.dataset_path / case_name / "config.json"
+
+        if not config_path.exists():
+            return {}
+
+        return json.loads(config_path.read_text()).get("listSortKeys", {})
+
+    def _compare(
+        self, expected: dict, obtained: dict, list_sort_keys: dict[str, str | None]
+    ) -> dict:
         analysis = {}
 
         for key, valor_esperado in expected.items():
             valor_obtido = obtained.get(key)
-            status = "acerto" if valor_obtido == valor_esperado else "erro"
 
+            if isinstance(valor_esperado, list) and key in list_sort_keys:
+                match = self._compare_lists(
+                    valor_esperado, valor_obtido, list_sort_keys[key]
+                )
+            else:
+                match = valor_obtido == valor_esperado
+
+            status = "acerto" if match else "erro"
             analysis[key] = {
                 "valor_esperado": valor_esperado,
                 "valor_obtido": valor_obtido,
                 "status": status,
             }
 
-            logger.debug(
-                f"  {key}: esperado={valor_esperado!r} obtido={valor_obtido!r} -> {status}"
-            )
+            logger.debug(f"  {key}: {status}")
 
         return analysis
+
+    @staticmethod
+    def _compare_lists(expected: list, obtained: object, sort_key: str | None) -> bool:
+        if not isinstance(obtained, list):
+            return False
+
+        if len(expected) != len(obtained):
+            return False
+
+        if sort_key is None:
+            return sorted(str(x) for x in expected) == sorted(str(x) for x in obtained)
+
+        return sorted(
+            expected, key=lambda x: x.get(sort_key, "") if isinstance(x, dict) else ""
+        ) == sorted(
+            obtained, key=lambda x: x.get(sort_key, "") if isinstance(x, dict) else ""
+        )
 
     def _save_analysis(self, case_name: str, analysis: dict) -> None:
         output_dir = self.analyses_path / case_name
