@@ -8,6 +8,7 @@ document.querySelectorAll("#cases-body tr").forEach((row) => {
       selectCase(row, caseName);
     }
   });
+
 });
 
 document.getElementById("pdf-fullscreen-btn").addEventListener("click", () => {

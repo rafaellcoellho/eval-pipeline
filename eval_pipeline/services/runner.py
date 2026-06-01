@@ -19,6 +19,7 @@ class EvalPipelineRunner:
     def __init__(
         self,
         case_names: list[str] | None = None,
+        on_case_started: Callable[[str], None] | None = None,
         on_case_done: Callable[[str], None] | None = None,
     ) -> None:
         settings = Settings()
@@ -31,6 +32,7 @@ class EvalPipelineRunner:
         self.result_endpoint = settings.endpoint_resultado
         self.session_id = uuid.uuid4().hex[:12]
         self.case_names = case_names
+        self.on_case_started = on_case_started
         self.on_case_done = on_case_done
 
         logger.info(f"Runner iniciado. session_id={self.session_id}")
@@ -96,6 +98,9 @@ class EvalPipelineRunner:
         return response.json()["codigoBilhete"]
 
     def _aguardar_resultado(self, ticket: str, case_name: str) -> None:
+        if self.on_case_started:
+            self.on_case_started(case_name)
+
         url = f"{self.api_base_url}/{self.result_endpoint}"
 
         while True:

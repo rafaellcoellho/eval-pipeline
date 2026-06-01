@@ -13,6 +13,9 @@ class PipelineService:
     def start_run(cls, case_names: list[str]) -> str:
         runner = EvalPipelineRunner(
             case_names=case_names,
+            on_case_started=lambda case_name: cls._mark_case_started(
+                runner.session_id, case_name
+            ),
             on_case_done=lambda case_name: cls._mark_case_done(
                 runner.session_id, case_name
             ),
@@ -37,6 +40,10 @@ class PipelineService:
     @classmethod
     def get_session(cls, session_id: str) -> dict | None:
         return cls._sessions.get(session_id)
+
+    @classmethod
+    def _mark_case_started(cls, session_id: str, case_name: str) -> None:
+        cls._sessions[session_id]["cases"][case_name] = "started"
 
     @classmethod
     def _mark_case_done(cls, session_id: str, case_name: str) -> None:

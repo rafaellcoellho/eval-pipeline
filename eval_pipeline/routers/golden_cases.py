@@ -1,4 +1,5 @@
 import json
+import shutil
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
@@ -47,3 +48,15 @@ def get_processed_result(case_name: str, filename: str) -> dict:
         raise HTTPException(status_code=404, detail="Resultado não encontrado")
 
     return json.loads(file_path.read_text())
+
+
+@router.delete("/cases/{case_name}/data")
+def clear_case_data(case_name: str) -> dict:
+    data_root = get_settings().path_data_files
+
+    for folder in ["analysis", "processed"]:
+        path = data_root / folder / case_name
+        if path.exists():
+            shutil.rmtree(path)
+
+    return {"ok": True}

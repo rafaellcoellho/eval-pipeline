@@ -1,9 +1,11 @@
+import shutil
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Request
 from fastapi.responses import HTMLResponse
 
 from eval_pipeline.services.pipeline import PipelineService
+from eval_pipeline.utils.settings import get_settings
 from eval_pipeline.views.run import RunView
 
 router = APIRouter()
@@ -39,3 +41,16 @@ def run_monitoring_page(request: Request, session_id: str) -> HTMLResponse:
 @router.get("/run/{session_id}/status")
 def run_status(session_id: str) -> dict:
     return PipelineService.get_status(session_id)
+
+
+@router.delete("/run/data")
+def clear_all_data() -> dict:
+    data_root = get_settings().path_data_files
+
+    for folder in ["analysis", "processed"]:
+        path = data_root / folder
+        if path.exists():
+            shutil.rmtree(path)
+            path.mkdir()
+
+    return {"ok": True}

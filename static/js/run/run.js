@@ -8,9 +8,21 @@ if (isMonitoring) {
   initSelection();
 }
 
+async function startRun(caseNames) {
+  const res = await fetch("/run", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ case_names: caseNames }),
+  });
+  const { session_id } = await res.json();
+  window.location.href = `/run/${session_id}`;
+}
+
 function initSelection() {
   const checkboxes = document.querySelectorAll(".case-checkbox");
   const runBtn = document.getElementById("run-btn");
+  const runAllBtn = document.getElementById("run-all-btn");
+  const clearSelectedBtn = document.getElementById("clear-selected-btn");
   const countLabel = document.getElementById("selected-count");
   const toggleBtn = document.getElementById("toggle-all");
 
@@ -19,6 +31,7 @@ function initSelection() {
     const n = checked.length;
     countLabel.textContent = `${n} selecionado${n !== 1 ? "s" : ""}`;
     runBtn.disabled = n === 0;
+    clearSelectedBtn.disabled = n === 0;
     toggleBtn.textContent = n === checkboxes.length ? "Desmarcar todos" : "Selecionar todos";
   }
 
@@ -31,21 +44,40 @@ function initSelection() {
     updateCount();
   });
 
-  runBtn.addEventListener("click", async () => {
-    const caseNames = [...checkboxes]
-      .filter((cb) => cb.checked)
-      .map((cb) => cb.value);
-
+  runBtn.addEventListener("click", () => {
+    const caseNames = [...checkboxes].filter((cb) => cb.checked).map((cb) => cb.value);
     runBtn.disabled = true;
+    startRun(caseNames);
+  });
 
-    const res = await fetch("/run", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ case_names: caseNames }),
+  runAllBtn.addEventListener("click", () => {
+    runAllBtn.disabled = true;
+    startRun([...checkboxes].map((cb) => cb.value));
+  });
+
+  document.querySelectorAll(".run-single-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      btn.disabled = true;
+      startRun([btn.dataset.case]);
     });
+  });
 
-    const { session_id } = await res.json();
-    window.location.href = `/run/${session_id}`;
+  document.querySelectorAll(".clear-single-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      await fetch(`/cases/${btn.dataset.case}/data`, { method: "DELETE" });
+      window.location.reload();
+    });
+  });
+
+  clearSelectedBtn.addEventListener("click", async () => {
+    const caseNames = [...checkboxes].filter((cb) => cb.checked).map((cb) => cb.value);
+    await Promise.all(caseNames.map((name) => fetch(`/cases/${name}/data`, { method: "DELETE" })));
+    window.location.reload();
+  });
+
+  document.getElementById("clear-data-btn").addEventListener("click", async () => {
+    await fetch("/run/data", { method: "DELETE" });
+    window.location.reload();
   });
 }
 
@@ -92,6 +124,7 @@ function showOverallDone(overall) {
   if (overall === "done") {
     document.getElementById("overall-check").classList.remove("hidden");
     document.getElementById("done-banner").classList.remove("hidden");
+    setTimeout(() => { window.location.href = "/run"; }, 1500);
   } else {
     document.getElementById("overall-error").classList.remove("hidden");
   }
@@ -99,12 +132,14 @@ function showOverallDone(overall) {
 
 function badgeClass(status) {
   if (status === "done") return "bg-green-500/10 text-green-400";
+  if (status === "started") return "bg-yellow-500/10 text-yellow-400";
   if (status === "error") return "bg-red-500/10 text-red-400";
   return "bg-gray-800 text-gray-500";
 }
 
 function badgeContent(status) {
   if (status === "done") return `<i data-lucide="check" class="w-3 h-3"></i> Concluído`;
+  if (status === "started") return `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Iniciado`;
   if (status === "error") return `<i data-lucide="x" class="w-3 h-3"></i> Erro`;
-  return `<i data-lucide="clock" class="w-3 h-3"></i> Pendente`;
+  return `<i data-lucide="clock" class="w-3 h-3"></i> Na fila`;
 }
