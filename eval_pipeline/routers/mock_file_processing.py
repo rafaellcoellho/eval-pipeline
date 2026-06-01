@@ -8,57 +8,55 @@ app = FastAPI()
 
 PROCESSING_DELAY_SECONDS = 5
 
-_tickets: dict[str, float] = {}
+_tickets: dict[str, dict] = {}
+
+CASE_RESULTS: dict[str, dict] = {
+    "01_exemplo": {
+        "textoEstado": "Finalizado",
+        "numeroMatricula": "123456789",
+    },
+}
 
 
 class ProcessarArquivoRequest(BaseModel):
     arquivo_base64: str
+    case_name: str = ""
 
 
 class ProcessarArquivoResponse(BaseModel):
     ticket: str
 
 
-class ConsultarResultadoResponse(BaseModel):
-    status: str
-    numero_matricula: str
-
-
 class ConsultarResultadoRequest(BaseModel):
     ticket: str
 
 
-def _gerar_ticket(arquivo_base64: str) -> str:
-    return hashlib.sha256(arquivo_base64.encode()).hexdigest()
-
-
-def _derivar_matricula(ticket: str) -> str:
-    return str(int(ticket[:8], 16) % 900_000 + 100_000)
-
-
 @app.post("/processar-arquivo", response_model=ProcessarArquivoResponse)
 def processar_arquivo(body: ProcessarArquivoRequest) -> ProcessarArquivoResponse:
-    ticket = _gerar_ticket(body.arquivo_base64)
-    _tickets[ticket] = time.monotonic()
+    ticket = hashlib.sha256(
+        f"{body.arquivo_base64}{body.case_name}".encode()
+    ).hexdigest()
+    _tickets[ticket] = {"created_at": time.monotonic(), "case_name": body.case_name}
 
     return ProcessarArquivoResponse(ticket=ticket)
 
 
-@app.post("/consultar-resultado", response_model=ConsultarResultadoResponse)
-def consultar_resultado(body: ConsultarResultadoRequest) -> ConsultarResultadoResponse:
-    criado_em = _tickets.get(body.ticket)
+@app.post("/consultar-resultado")
+def consultar_resultado(body: ConsultarResultadoRequest) -> dict:
+    entry = _tickets.get(body.ticket)
 
-    if criado_em is None:
+    if entry is None:
         raise HTTPException(
             status_code=404, detail=f"Ticket não encontrado: {body.ticket}"
         )
 
-    elapsed = time.monotonic() - criado_em
+    elapsed = time.monotonic() - entry["created_at"]
 
     if elapsed < PROCESSING_DELAY_SECONDS:
-        return ConsultarResultadoResponse(status="Na fila", numero_matricula="")
+        return {"textoEstado": "Na fila"}
 
-    return ConsultarResultadoResponse(
-        status="Finalizado",
-        numero_matricula=_derivar_matricula(body.ticket),
+    case_name = entry["case_name"]
+
+    return CASE_RESULTS.get(
+        case_name, {"textoEstado": "Finalizado", "numeroMatricula": "000000000"}
     )

@@ -58,7 +58,7 @@ class EvalPipelineRunner:
 
             logger.info(f"[{case_dir.name}] PDF encontrado: {pdf_path.name}")
 
-            ticket = self._enviar_arquivo(pdf_path)
+            ticket = self._enviar_arquivo(pdf_path, case_dir.name)
             logger.info(f"[{case_dir.name}] Arquivo enviado. Ticket: {ticket}")
 
             thread = threading.Thread(
@@ -76,14 +76,16 @@ class EvalPipelineRunner:
 
         logger.info("Todas as threads finalizadas.")
 
-    def _enviar_arquivo(self, pdf_path: Path) -> str:
+    def _enviar_arquivo(self, pdf_path: Path, case_name: str) -> str:
         logger.debug(f"Lendo e codificando {pdf_path.name} em base64.")
         arquivo_base64 = base64.b64encode(pdf_path.read_bytes()).decode()
 
         url = f"{self.api_base_url}/{self.upload_endpoint}"
         logger.debug(f"POST {url}")
 
-        response = requests.post(url, json={"arquivo_base64": arquivo_base64})
+        response = requests.post(
+            url, json={"arquivo_base64": arquivo_base64, "case_name": case_name}
+        )
         response.raise_for_status()
 
         return response.json()["ticket"]
@@ -99,8 +101,8 @@ class EvalPipelineRunner:
             response.raise_for_status()
             payload = response.json()
 
-            status = payload["status"]
-            logger.info(f"[{case_name}] Status: {status}")
+            status = payload["textoEstado"]
+            logger.info(f"[{case_name}] textoEstado: {status}")
 
             if status == "Finalizado":
                 self._salvar_resultado(ticket, case_name, payload)
