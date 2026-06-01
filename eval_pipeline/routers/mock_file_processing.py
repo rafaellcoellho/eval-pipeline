@@ -257,6 +257,14 @@ CASE_RESULTS: dict[str, dict] = {
             },
         ],
         "listaMuitosItens": _LISTA_MUITOS_ITENS,
+        "endereco": {
+            "rua": "Rua das Flores",
+            "numero": "456",
+            "bairro": "Jardim Primavera",
+            "cidade": "São Paulo",
+            "estado": "SP",
+            "cep": "01310-200",
+        },
     },
 }
 

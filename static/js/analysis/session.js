@@ -366,6 +366,53 @@ function renderStringListDiff(expected, obtained, expIdx, obtIdx) {
     </div>`;
 }
 
+function objectComparisonCell(expected, obtained) {
+  const expIdx = storeEntry("text", JSON.stringify(expected, null, 2), "Esperado");
+  const obtIdx = storeEntry("text", JSON.stringify(obtained ?? null, null, 2), "Obtido");
+
+  if (obtained === null || obtained === undefined || typeof obtained !== "object" || Array.isArray(obtained)) {
+    return `
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-red-400 font-mono">obtido não é um objeto</span>
+        ${copyBtn(expIdx)}
+      </div>`;
+  }
+
+  const allKeys = [...new Set([...Object.keys(expected), ...Object.keys(obtained)])];
+
+  const rows = allKeys
+    .map((k) => {
+      const expVal = expected[k] !== undefined ? displayValue(expected[k]) : "—";
+      const obtVal = obtained[k] !== undefined ? displayValue(obtained[k]) : "—";
+      const diff = JSON.stringify(expected[k]) !== JSON.stringify(obtained[k]);
+      return `
+        <tr>
+          <td class="px-3 py-1.5 font-mono text-xs ${diff ? "text-gray-400" : "text-gray-600"} align-top w-40">${escapeHtml(k)}</td>
+          <td class="px-3 py-1.5 font-mono text-xs ${diff ? "text-gray-300" : "text-gray-500"} align-top">${escapeHtml(expVal)}</td>
+          <td class="px-3 py-1.5 font-mono text-xs ${diff ? "text-red-400" : "text-gray-500"} align-top">${escapeHtml(obtVal)}</td>
+        </tr>`;
+    })
+    .join("");
+
+  return `
+    <div class="border border-gray-800 rounded overflow-hidden">
+      <table class="w-full">
+        <thead>
+          <tr class="bg-gray-800/40 text-xs text-gray-600">
+            <th class="text-left font-normal px-3 py-1.5 w-40">campo</th>
+            <th class="text-left font-normal px-3 py-1.5">esperado</th>
+            <th class="text-left font-normal px-3 py-1.5">obtido</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800/60">${rows}</tbody>
+      </table>
+    </div>
+    <div class="flex items-center gap-1.5 mt-2">
+      <span class="text-xs text-gray-600">esperado</span>${copyBtn(expIdx)}
+      <span class="text-xs text-gray-600 ml-2">obtido</span>${copyBtn(obtIdx)}
+    </div>`;
+}
+
 function renderFields(fields) {
   _entries.length = 0;
   const tbody = document.getElementById("fields-body");
@@ -384,6 +431,15 @@ function renderFields(fields) {
           <tr class="border-t border-gray-800">
             <td class="py-3 pr-6 font-mono text-gray-300 text-xs align-top">${escapeHtml(f.campo)}</td>
             <td class="py-3 pr-6 align-top" colspan="2">${listComparisonCell(f.valor_esperado, f.valor_obtido, f.list_sort_key || null)}</td>
+            <td class="py-3 align-top">${statusBadge}</td>
+          </tr>`;
+      }
+
+      if (f.valor_esperado !== null && typeof f.valor_esperado === "object") {
+        return `
+          <tr class="border-t border-gray-800">
+            <td class="py-3 pr-6 font-mono text-gray-300 text-xs align-top">${escapeHtml(f.campo)}</td>
+            <td class="py-3 pr-6 align-top" colspan="2">${objectComparisonCell(f.valor_esperado, f.valor_obtido)}</td>
             <td class="py-3 align-top">${statusBadge}</td>
           </tr>`;
       }
