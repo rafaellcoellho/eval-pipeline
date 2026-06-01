@@ -62,9 +62,15 @@ class AnalysisView:
                 analysis = json.loads(f.read_text())
                 sessions_map[session_id]["case_count"] += 1
                 for field_data in analysis.values():
-                    sessions_map[session_id]["total_fields"] += 1
-                    if field_data["status"] == "acerto":
-                        sessions_map[session_id]["correct_fields"] += 1
+                    breakdown = field_data.get("breakdown", {})
+                    if breakdown.get("ignored"):
+                        continue
+                    sessions_map[session_id]["total_fields"] += breakdown.get(
+                        "total", 1
+                    )
+                    sessions_map[session_id]["correct_fields"] += breakdown.get(
+                        "correct", 1 if field_data.get("status") == "acerto" else 0
+                    )
 
         result = sorted(
             sessions_map.values(), key=lambda s: s["timestamp"], reverse=True
@@ -101,13 +107,13 @@ class AnalysisView:
             f = matches[0]
             analysis = json.loads(f.read_text())
 
-            golden_root = get_settings().path_data_files / "golden_cases"
-            config_path = golden_root / case_dir.name / "config.json"
-            list_sort_keys: dict[str, str | None] = {}
-            if config_path.exists():
-                list_sort_keys = json.loads(config_path.read_text()).get(
-                    "listSortKeys", {}
-                )
+            global_config_path = get_settings().path_data_files / "config.json"
+            global_config = (
+                json.loads(global_config_path.read_text())
+                if global_config_path.exists()
+                else {}
+            )
+            list_sort_keys = global_config.get("listSortKeys", {})
 
             fields = [
                 {
@@ -115,6 +121,7 @@ class AnalysisView:
                     "valor_esperado": v["valor_esperado"],
                     "valor_obtido": v["valor_obtido"],
                     "status": v["status"],
+                    "breakdown": v.get("breakdown", {}),
                     "list_sort_key": list_sort_keys.get(key)
                     if isinstance(v["valor_esperado"], list)
                     else None,
@@ -122,8 +129,16 @@ class AnalysisView:
                 for key, v in analysis.items()
             ]
 
-            total = len(fields)
-            correct = sum(1 for field in fields if field["status"] == "acerto")
+            total = sum(
+                f["breakdown"].get("total", 1)
+                for f in fields
+                if not f["breakdown"].get("ignored")
+            )
+            correct = sum(
+                f["breakdown"].get("correct", 1 if f["status"] == "acerto" else 0)
+                for f in fields
+                if not f["breakdown"].get("ignored")
+            )
 
             cases.append(
                 {

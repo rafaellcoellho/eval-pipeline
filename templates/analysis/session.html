@@ -12,11 +12,12 @@
 
 {% block header_title %}
 Análise <span class="font-mono text-gray-400 font-normal">{{ session.session_id }}</span>
-<span class="ml-3 text-xs font-normal px-2 py-1 rounded-full
+<span class="ml-3 text-xs font-normal font-mono text-gray-500">{{ session.correct_fields }}/{{ session.total_fields }}</span>
+<span class="ml-1.5 text-xs font-normal px-2 py-1 rounded-full
   {% if session.accuracy_pct == 100 %}bg-green-500/10 text-green-400
   {% elif session.accuracy_pct >= 50 %}bg-yellow-500/10 text-yellow-400
   {% else %}bg-red-500/10 text-red-400{% endif %}">
-  {{ session.accuracy_pct }}% acurácia
+  {{ session.accuracy_pct }}%
 </span>
 {% endblock %}
 

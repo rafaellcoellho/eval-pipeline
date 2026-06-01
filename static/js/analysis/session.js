@@ -428,11 +428,32 @@ function renderFields(fields) {
 
   tbody.innerHTML = fields
     .map((f) => {
+      const isIgnored = f.breakdown && f.breakdown.ignored;
       const isAcerto = f.status === "acerto";
+      const breakdown = f.breakdown || {};
+      const hasBreakdown = !isIgnored && breakdown.total > 1;
+      const isPartial = hasBreakdown && breakdown.correct > 0 && breakdown.correct < breakdown.total;
+
+      let badgeColor, badgeIcon, badgeText;
+      if (isIgnored) {
+        badgeColor = "bg-gray-800 text-gray-600";
+        badgeIcon = "minus";
+        badgeText = "ignorado";
+      } else if (hasBreakdown) {
+        badgeText = `${breakdown.correct}/${breakdown.total}`;
+        if (isAcerto) { badgeColor = "bg-green-500/10 text-green-400"; badgeIcon = "check"; }
+        else if (isPartial) { badgeColor = "bg-yellow-500/10 text-yellow-400"; badgeIcon = "circle-dot"; }
+        else { badgeColor = "bg-red-500/10 text-red-400"; badgeIcon = "x"; }
+      } else {
+        badgeText = isAcerto ? "acerto" : "erro";
+        badgeColor = isAcerto ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400";
+        badgeIcon = isAcerto ? "check" : "x";
+      }
+
       const statusBadge = `
-        <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${isAcerto ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}">
-          <i data-lucide="${isAcerto ? "check" : "x"}" class="w-3 h-3"></i>
-          ${isAcerto ? "acerto" : "erro"}
+        <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${badgeColor}">
+          <i data-lucide="${badgeIcon}" class="w-3 h-3"></i>
+          ${badgeText}
         </span>`;
 
       if (Array.isArray(f.valor_esperado)) {

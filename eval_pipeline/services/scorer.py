@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
@@ -43,9 +44,11 @@ class Scorer:
                 )
                 continue
 
-            list_sort_keys = self._load_list_sort_keys(case_dir.name)
+            global_config = self._load_global_config()
+            list_sort_keys = global_config.get("listSortKeys", {})
+            ignore_fields = set(global_config.get("ignoreFields", []))
             obtained = json.loads(result_file.read_text())
-            analysis = self._compare(expected, obtained, list_sort_keys)
+            analysis = self._compare(expected, obtained, list_sort_keys, ignore_fields)
 
             self._save_analysis(case_dir.name, analysis)
 
@@ -62,56 +65,117 @@ class Scorer:
 
         return json.loads(expected_path.read_text())
 
-    def _load_list_sort_keys(self, case_name: str) -> dict[str, str | None]:
-        config_path = self.dataset_path / case_name / "config.json"
+    def _load_global_config(self) -> dict:
+        config_path = self.dataset_path.parent / "config.json"
 
         if not config_path.exists():
             return {}
 
-        return json.loads(config_path.read_text()).get("listSortKeys", {})
+        return json.loads(config_path.read_text())
 
     def _compare(
-        self, expected: dict, obtained: dict, list_sort_keys: dict[str, str | None]
+        self,
+        expected: dict,
+        obtained: dict,
+        list_sort_keys: dict[str, str | None],
+        ignore_fields: set[str],
     ) -> dict:
         analysis = {}
 
         for key, valor_esperado in expected.items():
             valor_obtido = obtained.get(key)
 
-            if isinstance(valor_esperado, list) and key in list_sort_keys:
-                match = self._compare_lists(
+            if key in ignore_fields:
+                breakdown = {"total": 0, "correct": 0, "ignored": True}
+                status = "ignorado"
+            elif isinstance(valor_esperado, list) and key in list_sort_keys:
+                breakdown = self._breakdown_list(
                     valor_esperado, valor_obtido, list_sort_keys[key]
+                )
+                status = (
+                    "acerto" if breakdown["correct"] == breakdown["total"] else "erro"
+                )
+            elif isinstance(valor_esperado, dict):
+                breakdown = self._breakdown_object(valor_esperado, valor_obtido)
+                status = (
+                    "acerto" if breakdown["correct"] == breakdown["total"] else "erro"
                 )
             else:
                 match = valor_obtido == valor_esperado
+                breakdown = {"total": 1, "correct": 1 if match else 0}
+                status = "acerto" if match else "erro"
 
-            status = "acerto" if match else "erro"
             analysis[key] = {
                 "valor_esperado": valor_esperado,
                 "valor_obtido": valor_obtido,
                 "status": status,
+                "breakdown": breakdown,
             }
 
-            logger.debug(f"  {key}: {status}")
+            logger.debug(
+                f"  {key}: {breakdown['correct']}/{breakdown['total']} -> {status}"
+            )
 
         return analysis
 
     @staticmethod
-    def _compare_lists(expected: list, obtained: object, sort_key: str | None) -> bool:
+    def _breakdown_object(expected: dict, obtained: object) -> dict:
+        if not isinstance(obtained, dict):
+            return {"total": len(expected), "correct": 0}
+
+        all_keys = list({*expected.keys(), *obtained.keys()})
+        correct = sum(1 for k in all_keys if expected.get(k) == obtained.get(k))
+
+        return {"total": len(all_keys), "correct": correct}
+
+    @staticmethod
+    def _breakdown_list(expected: list, obtained: object, sort_key: str | None) -> dict:
         if not isinstance(obtained, list):
-            return False
+            total = (
+                sum(len(i) for i in expected)
+                if (expected and isinstance(expected[0], dict))
+                else len(expected)
+            )
+            return {"total": total, "correct": 0}
 
-        if len(expected) != len(obtained):
-            return False
+        is_object_list = bool(expected) and isinstance(expected[0], dict)
 
-        if sort_key is None:
-            return sorted(str(x) for x in expected) == sorted(str(x) for x in obtained)
+        if is_object_list and sort_key:
+            exp_map = {str(item.get(sort_key, "")): item for item in expected}
+            obt_map = {str(item.get(sort_key, "")): item for item in obtained}
+            all_keys = sorted({*exp_map.keys(), *obt_map.keys()})
 
-        return sorted(
-            expected, key=lambda x: x.get(sort_key, "") if isinstance(x, dict) else ""
-        ) == sorted(
-            obtained, key=lambda x: x.get(sort_key, "") if isinstance(x, dict) else ""
-        )
+            total = 0
+            correct = 0
+
+            for k in all_keys:
+                exp_item = exp_map.get(k)
+                obt_item = obt_map.get(k)
+
+                if exp_item is None:
+                    total += len(obt_item)
+                elif obt_item is None:
+                    total += len(exp_item)
+                else:
+                    item_keys = list({*exp_item.keys(), *obt_item.keys()})
+                    total += len(item_keys)
+                    correct += sum(
+                        1 for fk in item_keys if exp_item.get(fk) == obt_item.get(fk)
+                    )
+
+            return {"total": total, "correct": correct}
+
+        def _serialize(v: object) -> str:
+            return json.dumps(v, sort_keys=True) if isinstance(v, dict) else str(v)
+
+        exp_counts = Counter(_serialize(x) for x in expected)
+        obt_counts = Counter(_serialize(x) for x in obtained)
+        all_items = {*exp_counts.keys(), *obt_counts.keys()}
+
+        correct = sum(min(exp_counts[k], obt_counts.get(k, 0)) for k in exp_counts)
+        total = sum(max(exp_counts.get(k, 0), obt_counts.get(k, 0)) for k in all_items)
+
+        return {"total": total, "correct": correct}
 
     def _save_analysis(self, case_name: str, analysis: dict) -> None:
         output_dir = self.analyses_path / case_name
