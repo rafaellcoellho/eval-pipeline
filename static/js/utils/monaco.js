@@ -16,7 +16,7 @@ function createMonacoEditor(elementId) {
     lineNumbers: "on",
     contextmenu: false,
     fontSize: 13,
-    fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+    fontFamily: '"Cascadia Mono", Menlo, Monaco, "Liberation Mono", "Courier New", monospace',
     padding: { top: 12, bottom: 12 },
     renderLineHighlight: "line",
     overviewRulerLanes: 0,
