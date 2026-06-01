@@ -84,11 +84,16 @@ class EvalPipelineRunner:
         logger.debug(f"POST {url}")
 
         response = requests.post(
-            url, json={"arquivo_base64": arquivo_base64, "case_name": case_name}
+            url,
+            json={
+                "indicadorNovoProcessamento": 1,
+                "textoBinarioImagem": arquivo_base64,
+                "quantidadeTamanhoTextoBinarioImagem": len(arquivo_base64),
+            },
         )
         response.raise_for_status()
 
-        return response.json()["ticket"]
+        return response.json()["codigoBilhete"]
 
     def _aguardar_resultado(self, ticket: str, case_name: str) -> None:
         url = f"{self.api_base_url}/{self.result_endpoint}"
@@ -96,8 +101,8 @@ class EvalPipelineRunner:
         while True:
             time.sleep(POLLING_INTERVAL_SECONDS)
 
-            logger.debug(f"[{case_name}] POST {url} ticket={ticket}")
-            response = requests.post(url, json={"ticket": ticket})
+            logger.debug(f"[{case_name}] POST {url} codigoBilhete={ticket}")
+            response = requests.post(url, json={"codigoBilhete": ticket})
             response.raise_for_status()
             payload = response.json()
 
