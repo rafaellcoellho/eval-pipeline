@@ -1,6 +1,6 @@
 import json
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from eval_pipeline.utils.settings import get_settings
@@ -18,6 +18,19 @@ class GoldenCasesView:
             {"cases": self._list_cases()},
         )
 
+    def render_detail(self, case_name: str) -> HTMLResponse:
+        case = self._load_case(case_name)
+        if case is None:
+            raise HTTPException(
+                status_code=404, detail=f"Caso não encontrado: {case_name}"
+            )
+
+        return get_templates().TemplateResponse(
+            self.request,
+            "golden_cases/detail.html",
+            {"case": case},
+        )
+
     @staticmethod
     def _list_cases() -> list[dict]:
         golden_cases_path = get_settings().path_data_files / "golden_cases"
@@ -27,24 +40,26 @@ class GoldenCasesView:
             if not case_dir.is_dir():
                 continue
 
-            resultado_path = case_dir / "resultado.json"
-            resultado = (
-                json.loads(resultado_path.read_text())
-                if resultado_path.exists()
-                else {}
-            )
-
-            pdfs = list(case_dir.glob("*.pdf"))
-
-            cases.append(
-                {
-                    "name": case_dir.name,
-                    "pdf_filename": pdfs[0].name if pdfs else "",
-                    "resultado_filename": resultado_path.name
-                    if resultado_path.exists()
-                    else "resultado.json",
-                    "resultado": json.dumps(resultado, ensure_ascii=False),
-                }
-            )
+            cases.append({"name": case_dir.name})
 
         return cases
+
+    @staticmethod
+    def _load_case(case_name: str) -> dict | None:
+        case_dir = get_settings().path_data_files / "golden_cases" / case_name
+        if not case_dir.is_dir():
+            return None
+
+        resultado_path = case_dir / "resultado.json"
+        resultado = (
+            json.loads(resultado_path.read_text()) if resultado_path.exists() else {}
+        )
+
+        pdfs = list(case_dir.glob("*.pdf"))
+
+        return {
+            "name": case_name,
+            "pdf_filename": pdfs[0].name if pdfs else "",
+            "has_ocr": (case_dir / "ocr.txt").exists(),
+            "resultado_json": json.dumps(resultado, ensure_ascii=False, indent=2),
+        }

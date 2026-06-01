@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ case.name }} — Golden Cases — Eval Pipeline{% endblock %}
+{% block body_class %}flex flex-col{% endblock %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.47.0/min/vs/loader.min.js"></script>
+{% endblock %}
+
+{% block header_back %}
+<a href="/golden-cases" class="text-gray-500 hover:text-gray-300 transition-colors">
+  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+</a>
+{% endblock %}
+
+{% block header_title %}
+<span class="font-mono text-gray-300 font-normal">{{ case.name }}</span>
+{% endblock %}
+
+{% block header_actions %}
+<div class="flex items-center gap-2 ml-4">
+  {% if case.has_ocr %}
+  <button id="copy-ocr-btn"
+    class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors">
+    <i data-lucide="clipboard-copy" class="w-3.5 h-3.5"></i>
+    Copiar OCR
+  </button>
+  {% endif %}
+  <button id="copy-json-btn"
+    class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors">
+    <i data-lucide="braces" class="w-3.5 h-3.5"></i>
+    Copiar JSON
+  </button>
+  <span id="unsaved-badge" class="hidden text-xs text-yellow-400 font-medium">Não salvo</span>
+  <button id="save-btn" disabled
+    class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors">
+    <i data-lucide="save" class="w-3.5 h-3.5"></i>
+    Salvar
+  </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="flex-1 flex overflow-hidden p-4 gap-4"
+  data-case="{{ case.name }}"
+  data-has-ocr="{{ 'true' if case.has_ocr else 'false' }}"
+  data-resultado="{{ case.resultado_json | e }}">
+
+  <div class="flex-1 flex flex-col rounded-lg border border-gray-700 overflow-hidden">
+    <div class="px-4 py-2.5 bg-gray-800 border-b border-gray-700 shrink-0">
+      <span class="text-xs font-medium text-gray-400 font-mono">{{ case.pdf_filename or 'PDF' }}</span>
+    </div>
+    <div class="flex-1 overflow-hidden">
+      <iframe src="/cases/{{ case.name }}/pdf" class="w-full h-full"></iframe>
+    </div>
+  </div>
+
+  <div class="flex-1 flex flex-col rounded-lg border border-gray-700 overflow-hidden">
+    <div class="px-4 py-2.5 bg-gray-800 border-b border-gray-700 shrink-0">
+      <span class="text-xs font-medium text-gray-400 font-mono">resultado.json</span>
+    </div>
+    <div class="flex-1 overflow-hidden">
+      <div id="json-editor" class="w-full h-full"></div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/utils/monaco.js"></script>
+<script src="/static/js/golden_cases/detail.js"></script>
+{% endblock %}

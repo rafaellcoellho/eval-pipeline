@@ -2,11 +2,6 @@
 
 {% block title %}Golden Cases — Eval Pipeline{% endblock %}
 
-{% block head %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.47.0/min/vs/loader.min.js"></script>
-<link rel="stylesheet" href="/static/css/golden_cases/golden_cases.css" />
-{% endblock %}
-
 {% block header_back %}
 <a href="/" class="text-gray-500 hover:text-gray-300 transition-colors">
   <i data-lucide="chevron-left" class="w-4 h-4"></i>
@@ -16,43 +11,7 @@
 {% block header_title %}Golden Cases{% endblock %}
 
 {% block content %}
-<main class="px-8 py-6 flex flex-col gap-4">
-
-  <div id="viewer" class="hidden bg-gray-900 rounded-lg border border-gray-800 shadow-sm overflow-hidden">
-    <div class="flex gap-4 h-[50vh] p-4">
-      <div class="panel flex-1 h-full flex flex-col rounded-lg border border-gray-700 overflow-hidden">
-        <div class="px-4 py-2.5 bg-gray-800 border-b border-gray-700 flex items-center justify-between shrink-0">
-          <span id="pdf-filename-label" class="text-xs font-medium text-gray-400 font-mono"></span>
-          <div class="flex items-center gap-3">
-            <span id="viewer-case-label" class="text-xs text-gray-500 font-mono"></span>
-            <button id="pdf-fullscreen-btn" class="fullscreen-btn inline-flex items-center justify-center w-6 h-6 rounded text-gray-500 hover:text-gray-300 hover:bg-gray-700 transition-colors" title="Tela cheia">
-              <i data-lucide="maximize-2" class="icon-expand w-3.5 h-3.5"></i>
-              <i data-lucide="minimize-2" class="icon-compress w-3.5 h-3.5 hidden"></i>
-            </button>
-          </div>
-        </div>
-        <div class="flex-1 overflow-hidden">
-          <iframe id="pdf-frame" class="w-full h-full" src=""></iframe>
-        </div>
-      </div>
-      <div class="panel flex-1 h-full flex flex-col rounded-lg border border-gray-700 overflow-hidden">
-        <div class="px-4 py-2.5 bg-gray-800 border-b border-gray-700 flex items-center justify-between shrink-0">
-          <span id="resultado-filename-label" class="text-xs font-medium text-gray-400 font-mono"></span>
-          <div class="flex items-center gap-3">
-            <span id="viewer-json-case-label" class="text-xs text-gray-500 font-mono"></span>
-            <button id="json-fullscreen-btn" class="fullscreen-btn inline-flex items-center justify-center w-6 h-6 rounded text-gray-500 hover:text-gray-300 hover:bg-gray-700 transition-colors" title="Tela cheia">
-              <i data-lucide="maximize-2" class="icon-expand w-3.5 h-3.5"></i>
-              <i data-lucide="minimize-2" class="icon-compress w-3.5 h-3.5 hidden"></i>
-            </button>
-          </div>
-        </div>
-        <div class="flex-1 overflow-hidden">
-          <div id="json-editor" class="w-full h-full"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+<main class="px-8 py-6">
   <div class="bg-gray-900 rounded-lg border border-gray-800 shadow-sm overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
       <h2 class="text-sm font-medium text-gray-300">Golden Cases</h2>
@@ -65,20 +24,17 @@
           <th class="px-6 py-3 font-medium w-16 text-right">Ver</th>
         </tr>
       </thead>
-      <tbody id="cases-body">
+      <tbody>
         {% for case in cases %}
-        <tr
-          class="border-t border-gray-800 transition-colors duration-100"
-          data-case-name="{{ case.name }}"
-          data-pdf-filename="{{ case.pdf_filename }}"
-          data-resultado-filename="{{ case.resultado_filename }}"
-          data-resultado="{{ case.resultado | e }}"
-        >
+        <tr class="border-t border-gray-800 hover:bg-gray-800/40 transition-colors cursor-pointer"
+            onclick="window.location.href='/golden-cases/{{ case.name }}'">
           <td class="px-6 py-3.5 font-mono text-gray-300">{{ case.name }}</td>
           <td class="px-6 py-3.5 text-right">
-            <button class="eye-btn inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Visualizar">
-              <i data-lucide="eye" class="w-4 h-4"></i>
-            </button>
+            <a href="/golden-cases/{{ case.name }}"
+               class="inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+               onclick="event.stopPropagation()">
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
           </td>
         </tr>
         {% endfor %}
@@ -90,12 +46,7 @@
     </div>
     {% endif %}
   </div>
-
 </main>
 {% endblock %}
 
-{% block scripts %}
-<script src="/static/js/utils/monaco.js"></script>
-<script src="/static/js/golden_cases/editor.js"></script>
-<script src="/static/js/golden_cases/viewer.js"></script>
-{% endblock %}
+{% block scripts %}<script>lucide.createIcons();</script>{% endblock %}
