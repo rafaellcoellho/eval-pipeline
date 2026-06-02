@@ -1,7 +1,6 @@
 import base64
 import json
 import threading
-import time
 import uuid
 from collections.abc import Callable
 from datetime import datetime
@@ -13,6 +12,7 @@ from loguru import logger
 from eval_pipeline.settings import Settings
 
 POLLING_INTERVAL_SECONDS = 3
+TERMINAL_STATUSES = {"Finalizado", "Falhou", "Cancelado"}
 
 
 class EvalPipelineRunner:
@@ -20,7 +20,9 @@ class EvalPipelineRunner:
         self,
         case_names: list[str] | None = None,
         on_case_started: Callable[[str], None] | None = None,
+        on_case_status_changed: Callable[[str, str], None] | None = None,
         on_case_done: Callable[[str], None] | None = None,
+        on_case_error: Callable[[str], None] | None = None,
     ) -> None:
         settings = Settings()
 
@@ -33,12 +35,20 @@ class EvalPipelineRunner:
         self.session_id = uuid.uuid4().hex[:12]
         self.case_names = case_names
         self.on_case_started = on_case_started
+        self.on_case_status_changed = on_case_status_changed
         self.on_case_done = on_case_done
+        self.on_case_error = on_case_error
+        self.stop_event = threading.Event()
+        self.run_scorer_after_stop = False
 
         logger.info(f"Runner iniciado. session_id={self.session_id}")
         logger.info(f"Dataset: {self.dataset_path}")
         logger.info(f"Resultados: {self.results_path}")
         logger.info(f"API: {self.api_base_url}")
+
+    def stop(self, run_scorer_after: bool = False) -> None:
+        self.run_scorer_after_stop = run_scorer_after
+        self.stop_event.set()
 
     def run(self) -> None:
         all_dirs = [d for d in sorted(self.dataset_path.iterdir()) if d.is_dir()]
@@ -104,7 +114,10 @@ class EvalPipelineRunner:
         url = f"{self.api_base_url}/{self.result_endpoint}"
 
         while True:
-            time.sleep(POLLING_INTERVAL_SECONDS)
+            interrupted = self.stop_event.wait(timeout=POLLING_INTERVAL_SECONDS)
+            if interrupted:
+                logger.info(f"[{case_name}] Polling interrompido.")
+                return
 
             logger.debug(f"[{case_name}] POST {url} codigoBilhete={ticket}")
             response = requests.post(url, json={"codigoBilhete": ticket})
@@ -114,8 +127,18 @@ class EvalPipelineRunner:
             status = payload["textoEstado"]
             logger.info(f"[{case_name}] textoEstado: {status}")
 
+            if self.on_case_status_changed:
+                self.on_case_status_changed(case_name, status)
+
             if status == "Finalizado":
                 self._salvar_resultado(ticket, case_name, payload)
+                if self.on_case_done:
+                    self.on_case_done(case_name)
+                return
+
+            if status in TERMINAL_STATUSES:
+                if self.on_case_error:
+                    self.on_case_error(case_name)
                 return
 
     @staticmethod
@@ -133,6 +156,3 @@ class EvalPipelineRunner:
 
         output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
         logger.success(f"[{case_name}] Resultado salvo em {output_path}")
-
-        if self.on_case_done:
-            self.on_case_done(case_name)

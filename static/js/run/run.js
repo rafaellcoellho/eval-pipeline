@@ -67,13 +67,28 @@ function startPolling() {
   const sessionId = card.dataset.sessionId;
   const total = document.querySelectorAll(".case-row").length;
 
+  const stopAllBtn = document.getElementById("stop-all-btn");
+  const stopAndAnalyzeBtn = document.getElementById("stop-and-analyze-btn");
+
+  stopAllBtn.addEventListener("click", async () => {
+    stopAllBtn.disabled = true;
+    stopAndAnalyzeBtn.disabled = true;
+    await fetch(`/run/${sessionId}/stop`, { method: "POST" });
+  });
+
+  stopAndAnalyzeBtn.addEventListener("click", async () => {
+    stopAllBtn.disabled = true;
+    stopAndAnalyzeBtn.disabled = true;
+    await fetch(`/run/${sessionId}/stop-and-analyze`, { method: "POST" });
+  });
+
   const interval = setInterval(async () => {
     const res = await fetch(`/run/${sessionId}/status`);
     const data = await res.json();
 
     updateCaseStatuses(data.cases, total);
 
-    if (data.overall === "done" || data.overall === "error") {
+    if (data.overall === "done" || data.overall === "error" || data.overall === "cancelled") {
       clearInterval(interval);
       showOverallDone(data.overall);
     }
@@ -101,26 +116,40 @@ function updateCaseStatuses(cases, total) {
 
 function showOverallDone(overall) {
   document.getElementById("overall-spinner").classList.add("hidden");
+  document.getElementById("stop-all-btn").classList.add("hidden");
+  document.getElementById("stop-and-analyze-btn").classList.add("hidden");
 
   if (overall === "done") {
     document.getElementById("overall-check").classList.remove("hidden");
     document.getElementById("done-banner").classList.remove("hidden");
     setTimeout(() => { window.location.href = "/run"; }, 1500);
+  } else if (overall === "cancelled") {
+    document.getElementById("overall-error").classList.remove("hidden");
+    const banner = document.getElementById("cancelled-banner");
+    banner.classList.remove("hidden");
+    lucide.createIcons({ nodes: Array.from(banner.querySelectorAll("[data-lucide]")) });
   } else {
     document.getElementById("overall-error").classList.remove("hidden");
   }
 }
 
 function badgeClass(status) {
-  if (status === "done") return "bg-green-500/10 text-green-400";
-  if (status === "started") return "bg-yellow-500/10 text-yellow-400";
-  if (status === "error") return "bg-red-500/10 text-red-400";
+  if (status === "done" || status === "Finalizado") return "bg-green-500/10 text-green-400";
+  if (status === "started" || status === "Iniciado") return "bg-blue-500/10 text-blue-400";
+  if (status === "Aguardando nova tentativa" || status === "Adiado") return "bg-orange-500/10 text-orange-400";
+  if (status === "error" || status === "Falhou" || status === "Cancelado") return "bg-red-500/10 text-red-400";
   return "bg-gray-800 text-gray-500";
 }
 
 function badgeContent(status) {
   if (status === "done") return `<i data-lucide="check" class="w-3 h-3"></i> Concluído`;
-  if (status === "started") return `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Iniciado`;
-  if (status === "error") return `<i data-lucide="x" class="w-3 h-3"></i> Erro`;
-  return `<i data-lucide="clock" class="w-3 h-3"></i> Na fila`;
+  if (status === "Finalizado") return `<i data-lucide="check" class="w-3 h-3"></i> Finalizado`;
+  if (status === "started" || status === "Iniciado") return `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Iniciado`;
+  if (status === "Na fila" || status === "pending") return `<i data-lucide="clock" class="w-3 h-3"></i> Na fila`;
+  if (status === "Pendente") return `<i data-lucide="clock" class="w-3 h-3"></i> Pendente`;
+  if (status === "Aguardando nova tentativa") return `<i data-lucide="refresh-cw" class="w-3 h-3"></i> Aguardando nova tentativa`;
+  if (status === "Adiado") return `<i data-lucide="pause-circle" class="w-3 h-3"></i> Adiado`;
+  if (status === "error" || status === "Falhou") return `<i data-lucide="x" class="w-3 h-3"></i> Falhou`;
+  if (status === "Cancelado") return `<i data-lucide="ban" class="w-3 h-3"></i> Cancelado`;
+  return `<i data-lucide="clock" class="w-3 h-3"></i> ${status}`;
 }

@@ -39,3 +39,15 @@ def run_monitoring_page(request: Request, session_id: str) -> HTMLResponse:
 @router.get("/run/{session_id}/status")
 def run_status(session_id: str) -> dict:
     return PipelineService.get_status(session_id)
+
+
+@router.post("/run/{session_id}/stop")
+def stop_session(session_id: str) -> dict:
+    PipelineService.stop_session(session_id)
+    return {"ok": True}
+
+
+@router.post("/run/{session_id}/stop-and-analyze")
+def stop_and_analyze(session_id: str) -> dict:
+    PipelineService.stop_and_analyze(session_id)
+    return {"ok": True}

@@ -1,7 +1,10 @@
 import base64
 import hashlib
 import math
+import threading
 import time
+import uuid
+from collections import deque
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -10,7 +13,10 @@ from eval_pipeline.settings import Settings
 
 app = FastAPI()
 
-PROCESSING_DELAY_SECONDS = 5
+CASE_DELAYS: dict[str, int] = {
+    "01_exemplo": 5,
+    "02_exemplo": 15,
+}
 
 _tickets: dict[str, dict] = {}
 
@@ -272,9 +278,9 @@ CASE_RESULTS: dict[str, dict] = {
 }
 
 
-def _build_pdf_hash_map() -> dict[str, str]:
+def _build_pdf_hash_map() -> dict[str, deque[str]]:
     golden_cases = Settings().path_data_files / "golden_cases"
-    mapping: dict[str, str] = {}
+    mapping: dict[str, list[str]] = {}
 
     for case_dir in sorted(golden_cases.iterdir()):
         if not case_dir.is_dir():
@@ -285,13 +291,14 @@ def _build_pdf_hash_map() -> dict[str, str]:
             continue
 
         b64 = base64.b64encode(pdfs[0].read_bytes()).decode()
-        ticket = hashlib.sha256(b64.encode()).hexdigest()
-        mapping[ticket] = case_dir.name
+        content_hash = hashlib.sha256(b64.encode()).hexdigest()
+        mapping.setdefault(content_hash, []).append(case_dir.name)
 
-    return mapping
+    return {h: deque(names) for h, names in mapping.items()}
 
 
-_PDF_HASH_TO_CASE: dict[str, str] = _build_pdf_hash_map()
+_PDF_HASH_TO_CASES: dict[str, deque[str]] = _build_pdf_hash_map()
+_upload_lock = threading.Lock()
 
 
 class ProcessarArquivoRequest(BaseModel):
@@ -310,8 +317,15 @@ class ConsultarResultadoRequest(BaseModel):
 
 @app.post("/processar-arquivo", response_model=ProcessarArquivoResponse)
 def processar_arquivo(body: ProcessarArquivoRequest) -> ProcessarArquivoResponse:
-    ticket = hashlib.sha256(body.textoBinarioImagem.encode()).hexdigest()
-    case_name = _PDF_HASH_TO_CASE.get(ticket, "")
+    content_hash = hashlib.sha256(body.textoBinarioImagem.encode()).hexdigest()
+
+    with _upload_lock:
+        queue = _PDF_HASH_TO_CASES.get(content_hash, deque())
+        case_name = queue[0] if queue else ""
+        if queue:
+            queue.rotate(-1)
+
+    ticket = uuid.uuid4().hex
     _tickets[ticket] = {"created_at": time.monotonic(), "case_name": case_name}
 
     return ProcessarArquivoResponse(codigoBilhete=ticket)
@@ -327,9 +341,15 @@ def consultar_resultado(body: ConsultarResultadoRequest) -> dict:
         )
 
     elapsed = time.monotonic() - entry["created_at"]
+    delay = CASE_DELAYS.get(entry["case_name"], 5)
+    ratio = elapsed / delay
 
-    if elapsed < PROCESSING_DELAY_SECONDS:
+    if ratio < 0.3:
         return {"textoEstado": "Na fila"}
+    if ratio < 0.6:
+        return {"textoEstado": "Iniciado"}
+    if ratio < 1.0:
+        return {"textoEstado": "Aguardando nova tentativa"}
 
     case_name = entry["case_name"]
 

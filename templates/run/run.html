@@ -62,7 +62,19 @@
         <i data-lucide="x-circle" id="overall-error" class="w-4 h-4 text-red-400 hidden"></i>
         <h2 class="text-sm font-medium text-gray-300">Sessão <span class="font-mono text-gray-400">{{ session_id }}</span></h2>
       </div>
-      <span id="progress-label" class="text-xs text-gray-500">0 / {{ cases | length }} concluídos</span>
+      <div class="flex items-center gap-3">
+        <span id="progress-label" class="text-xs text-gray-500">0 / {{ cases | length }} concluídos</span>
+        <button id="stop-and-analyze-btn"
+          class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-orange-600 hover:bg-orange-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium transition-colors">
+          <i data-lucide="scissors" class="w-3.5 h-3.5"></i>
+          Parar e analisar
+        </button>
+        <button id="stop-all-btn"
+          class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-red-700 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium transition-colors">
+          <i data-lucide="square" class="w-3.5 h-3.5"></i>
+          Parar tudo
+        </button>
+      </div>
     </div>
     <div id="cases-monitor">
       {% for case in cases %}
@@ -89,6 +101,13 @@
     </div>
     <div id="done-banner" class="hidden px-6 py-4 border-t border-gray-800">
       <span class="text-sm text-green-400 font-medium">Pipeline concluído. Redirecionando...</span>
+    </div>
+    <div id="cancelled-banner" class="hidden px-6 py-4 border-t border-gray-800 flex items-center justify-between">
+      <span class="text-sm text-gray-400 font-medium">Sessão cancelada.</span>
+      <a href="/run" class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium transition-colors">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Voltar
+      </a>
     </div>
   </div>
 
