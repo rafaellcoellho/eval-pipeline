@@ -48,7 +48,10 @@ class Scorer:
             list_sort_keys = global_config.get("listSortKeys", {})
             ignore_fields = set(global_config.get("ignoreFields", []))
             obtained = json.loads(result_file.read_text())
+            duration_seconds = obtained.pop("__duration_seconds__", None)
             analysis = self._compare(expected, obtained, list_sort_keys, ignore_fields)
+            if duration_seconds is not None:
+                analysis["__duration_seconds__"] = duration_seconds
 
             self._save_analysis(case_dir.name, analysis)
 

@@ -52,12 +52,22 @@ class AnalysisView:
                         "total_fields": 0,
                         "correct_fields": 0,
                         "cases": [],
+                        "total_duration": 0.0,
+                        "duration_count": 0,
                     }
 
                 analysis = json.loads(f.read_text())
                 sessions_map[session_id]["case_count"] += 1
                 sessions_map[session_id]["cases"].append(case_dir.name)
+
+                duration = analysis.get("__duration_seconds__")
+                if duration is not None:
+                    sessions_map[session_id]["total_duration"] += duration
+                    sessions_map[session_id]["duration_count"] += 1
+
                 for field_data in analysis.values():
+                    if not isinstance(field_data, dict):
+                        continue
                     breakdown = field_data.get("breakdown", {})
                     if breakdown.get("ignored"):
                         continue
@@ -80,6 +90,10 @@ class AnalysisView:
             notes_path = analysis_root / f"{s['session_id']}.txt"
             s["notes"] = (
                 notes_path.read_text(encoding="utf-8") if notes_path.exists() else ""
+            )
+            count = s.pop("duration_count")
+            s["avg_duration_seconds"] = (
+                round(s.pop("total_duration") / count, 1) if count > 0 else None
             )
 
         return result
@@ -111,6 +125,8 @@ class AnalysisView:
             )
             list_sort_keys = global_config.get("listSortKeys", {})
 
+            duration_seconds = analysis.get("__duration_seconds__")
+
             fields = [
                 {
                     "campo": key,
@@ -123,6 +139,7 @@ class AnalysisView:
                     else None,
                 }
                 for key, v in analysis.items()
+                if isinstance(v, dict)
             ]
 
             total = sum(
@@ -143,6 +160,7 @@ class AnalysisView:
                     "total": total,
                     "correct": correct,
                     "accuracy_pct": round(correct / total * 100) if total > 0 else 0,
+                    "duration_seconds": duration_seconds,
                 }
             )
 

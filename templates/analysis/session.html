@@ -65,12 +65,20 @@ Análise <span class="font-mono text-gray-400 font-normal">{{ session.session_id
         data-fields="{{ case.fields_json | e }}"
       >
         <span class="font-mono text-sm text-gray-300 truncate">{{ case.name }}</span>
-        <span class="shrink-0 ml-2 text-xs font-medium px-1.5 py-0.5 rounded
-          {% if case.accuracy_pct == 100 %}bg-green-500/10 text-green-400
-          {% elif case.accuracy_pct >= 50 %}bg-yellow-500/10 text-yellow-400
-          {% else %}bg-red-500/10 text-red-400{% endif %}">
-          {{ case.accuracy_pct }}%
-        </span>
+        <div class="shrink-0 ml-2 flex flex-col items-end gap-0.5">
+          <span class="text-xs font-medium px-1.5 py-0.5 rounded
+            {% if case.accuracy_pct == 100 %}bg-green-500/10 text-green-400
+            {% elif case.accuracy_pct >= 50 %}bg-yellow-500/10 text-yellow-400
+            {% else %}bg-red-500/10 text-red-400{% endif %}">
+            {{ case.accuracy_pct }}%
+          </span>
+          {% if case.duration_seconds %}
+          <span class="text-xs text-gray-600 font-mono">
+            {% set s = case.duration_seconds | int %}
+            {% if s < 60 %}{{ case.duration_seconds }}s{% else %}{{ s // 60 }}m {{ s % 60 }}s{% endif %}
+          </span>
+          {% endif %}
+        </div>
       </div>
       {% endfor %}
     </div>

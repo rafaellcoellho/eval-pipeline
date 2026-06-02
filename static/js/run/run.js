@@ -82,11 +82,40 @@ function startPolling() {
     await fetch(`/run/${sessionId}/stop-and-analyze`, { method: "POST" });
   });
 
+  const caseStartTimes = {};
+  const caseEndTimes = {};
+
+  setInterval(() => {
+    for (const [caseName, startTime] of Object.entries(caseStartTimes)) {
+      const row = document.querySelector(`.case-row[data-case="${caseName}"]`);
+      if (!row) continue;
+      const timerEl = row.querySelector(".case-timer");
+      if (!timerEl) continue;
+      const end = caseEndTimes[caseName] ?? Date.now();
+      const elapsed = Math.floor((end - startTime) / 1000);
+      const m = Math.floor(elapsed / 60);
+      const s = elapsed % 60;
+      timerEl.textContent = `${m}:${s.toString().padStart(2, "0")}`;
+    }
+  }, 1000);
+
+  const ACTIVE_STATUSES = new Set(["Na fila", "Pendente", "Iniciado", "Adiado", "Aguardando nova tentativa", "started"]);
+  const TERMINAL_STATUSES_JS = new Set(["done", "error", "Finalizado", "Falhou", "Cancelado"]);
+
+  function trackCaseTime(caseName, status) {
+    if (ACTIVE_STATUSES.has(status) && !caseStartTimes[caseName]) {
+      caseStartTimes[caseName] = Date.now();
+    }
+    if (TERMINAL_STATUSES_JS.has(status) && !caseEndTimes[caseName] && caseStartTimes[caseName]) {
+      caseEndTimes[caseName] = Date.now();
+    }
+  }
+
   const interval = setInterval(async () => {
     const res = await fetch(`/run/${sessionId}/status`);
     const data = await res.json();
 
-    updateCaseStatuses(data.cases, total);
+    updateCaseStatuses(data.cases, total, trackCaseTime);
 
     if (data.overall === "done" || data.overall === "error" || data.overall === "cancelled") {
       clearInterval(interval);
@@ -95,13 +124,14 @@ function startPolling() {
   }, 2000);
 }
 
-function updateCaseStatuses(cases, total) {
+function updateCaseStatuses(cases, total, onCaseStatus) {
   let doneCount = 0;
 
   for (const [caseName, status] of Object.entries(cases)) {
     const row = document.querySelector(`.case-row[data-case="${caseName}"]`);
     if (!row) continue;
 
+    if (onCaseStatus) onCaseStatus(caseName, status);
     if (status === "done") doneCount++;
 
     const badge = row.querySelector(".status-badge");

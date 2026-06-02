@@ -81,6 +81,8 @@
       <div class="case-row flex items-center justify-between px-6 py-3 border-b border-gray-800 last:border-0"
            data-case="{{ case.name }}">
         <span class="font-mono text-sm text-gray-300">{{ case.name }}</span>
+        <div class="flex items-center gap-3">
+        <span class="case-timer text-xs text-gray-600 font-mono tabular-nums w-12 text-right"></span>
         <span class="status-badge inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-full
           {% if case.status == 'done' %}bg-green-500/10 text-green-400
           {% elif case.status == 'started' %}bg-yellow-500/10 text-yellow-400
@@ -96,6 +98,7 @@
             <i data-lucide="clock" class="w-3 h-3"></i> Na fila
           {% endif %}
         </span>
+        </div>
       </div>
       {% endfor %}
     </div>

@@ -111,6 +111,7 @@ class EvalPipelineRunner:
         if self.on_case_started:
             self.on_case_started(case_name)
 
+        started_at = time.monotonic()
         url = f"{self.api_base_url}/{self.result_endpoint}"
 
         while True:
@@ -131,7 +132,8 @@ class EvalPipelineRunner:
                 self.on_case_status_changed(case_name, status)
 
             if status == "Finalizado":
-                self._salvar_resultado(ticket, case_name, payload)
+                duration = time.monotonic() - started_at
+                self._salvar_resultado(ticket, case_name, payload, duration)
                 if self.on_case_done:
                     self.on_case_done(case_name)
                 return
@@ -147,12 +149,22 @@ class EvalPipelineRunner:
 
         return pdfs[0] if pdfs else None
 
-    def _salvar_resultado(self, ticket: str, case_name: str, payload: dict) -> None:
+    def _salvar_resultado(
+        self,
+        ticket: str,
+        case_name: str,
+        payload: dict,
+        duration_seconds: float | None = None,
+    ) -> None:
         output_dir = self.results_path / case_name
         output_dir.mkdir(parents=True, exist_ok=True)
 
         timestamp = datetime.now().strftime("%Y%m%d%H%M")
         output_path = output_dir / f"{self.session_id}_{timestamp}.json"
 
-        output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
+        data = dict(payload)
+        if duration_seconds is not None:
+            data["__duration_seconds__"] = round(duration_seconds, 1)
+
+        output_path.write_text(json.dumps(data, ensure_ascii=False, indent=2))
         logger.success(f"[{case_name}] Resultado salvo em {output_path}")

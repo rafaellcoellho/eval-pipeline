@@ -36,6 +36,7 @@
           <th class="px-6 py-3 font-medium">Exemplos</th>
           <th class="px-6 py-3 font-medium">Horário</th>
           <th class="px-6 py-3 font-medium">Acurácia</th>
+          <th class="px-6 py-3 font-medium">Tempo Médio</th>
           <th class="px-6 py-3 font-medium w-20 text-right">Ações</th>
         </tr>
       </thead>
@@ -72,6 +73,16 @@
               </span>
             </div>
           </td>
+          <td class="px-6 py-3.5">
+            {% if session.avg_duration_seconds %}
+            <span class="text-xs text-gray-400 font-mono">
+              {% set s = session.avg_duration_seconds | int %}
+              {% if s < 60 %}{{ session.avg_duration_seconds }}s{% else %}{{ s // 60 }}m {{ s % 60 }}s{% endif %}
+            </span>
+            {% else %}
+            <span class="text-xs text-gray-600">—</span>
+            {% endif %}
+          </td>
           <td class="px-6 py-3.5 text-right">
             <div class="flex items-center justify-end gap-1">
               <button class="notes-btn inline-flex items-center justify-center w-7 h-7 rounded-md text-gray-500 hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors"
@@ -94,7 +105,7 @@
         {% endfor %}
         {% if not sessions %}
         <tr>
-          <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-500">Nenhuma análise encontrada. Execute o pipeline para gerar análises.</td>
+          <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500">Nenhuma análise encontrada. Execute o pipeline para gerar análises.</td>
         </tr>
         {% endif %}
       </tbody>
