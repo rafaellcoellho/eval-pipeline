@@ -22,7 +22,6 @@ function initSelection() {
   const checkboxes = document.querySelectorAll(".case-checkbox");
   const runBtn = document.getElementById("run-btn");
   const runAllBtn = document.getElementById("run-all-btn");
-  const clearSelectedBtn = document.getElementById("clear-selected-btn");
   const countLabel = document.getElementById("selected-count");
   const toggleBtn = document.getElementById("toggle-all");
 
@@ -31,7 +30,6 @@ function initSelection() {
     const n = checked.length;
     countLabel.textContent = `${n} selecionado${n !== 1 ? "s" : ""}`;
     runBtn.disabled = n === 0;
-    clearSelectedBtn.disabled = n === 0;
     toggleBtn.textContent = n === checkboxes.length ? "Desmarcar todos" : "Selecionar todos";
   }
 
@@ -62,23 +60,6 @@ function initSelection() {
     });
   });
 
-  document.querySelectorAll(".clear-single-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      await fetch(`/cases/${btn.dataset.case}/data`, { method: "DELETE" });
-      window.location.reload();
-    });
-  });
-
-  clearSelectedBtn.addEventListener("click", async () => {
-    const caseNames = [...checkboxes].filter((cb) => cb.checked).map((cb) => cb.value);
-    await Promise.all(caseNames.map((name) => fetch(`/cases/${name}/data`, { method: "DELETE" })));
-    window.location.reload();
-  });
-
-  document.getElementById("clear-data-btn").addEventListener("click", async () => {
-    await fetch("/run/data", { method: "DELETE" });
-    window.location.reload();
-  });
 }
 
 function startPolling() {
