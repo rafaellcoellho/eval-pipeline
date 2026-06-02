@@ -51,10 +51,12 @@ class AnalysisView:
                         "case_count": 0,
                         "total_fields": 0,
                         "correct_fields": 0,
+                        "cases": [],
                     }
 
                 analysis = json.loads(f.read_text())
                 sessions_map[session_id]["case_count"] += 1
+                sessions_map[session_id]["cases"].append(case_dir.name)
                 for field_data in analysis.values():
                     breakdown = field_data.get("breakdown", {})
                     if breakdown.get("ignored"):

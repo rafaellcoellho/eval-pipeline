@@ -209,63 +209,66 @@ _LISTA_MUITOS_ITENS: list[dict] = [
     },
 ]
 
-CASE_RESULTS: dict[str, dict] = {
-    "01_exemplo": {
-        "textoEstado": "Finalizado",
-        "numeroMatricula": "123456789",
-        "textoMuitoGrande": _TEXTO_MUITO_GRANDE,
-        "produtos": [
-            {
-                "codigo": "P001",
-                "nome": "Notebook Dell",
-                "preco": "3500.00",
-                "categoria": "Eletronicos",
-                "estoque": "15",
-                "ativo": "true",
-            },
-            {
-                "codigo": "P002",
-                "nome": "Mouse Logitech",
-                "preco": "150.00",
-                "categoria": "Perifericos",
-                "estoque": "42",
-                "ativo": "true",
-            },
-            {
-                "codigo": "P003",
-                "nome": "Teclado Mecanico",
-                "preco": "280.00",
-                "categoria": "Perifericos",
-                "estoque": "30",
-                "ativo": "false",
-            },
-            {
-                "codigo": "P004",
-                "nome": "Monitor LG 27pol",
-                "preco": "1350.00",
-                "categoria": "Monitores",
-                "estoque": "8",
-                "ativo": "true",
-            },
-            {
-                "codigo": "P006",
-                "nome": "Headset Sony",
-                "preco": "280.00",
-                "categoria": "Audio",
-                "estoque": "12",
-                "ativo": "true",
-            },
-        ],
-        "listaMuitosItens": _LISTA_MUITOS_ITENS,
-        "endereco": {
-            "rua": "Rua das Flores",
-            "numero": "456",
-            "bairro": "Jardim Primavera",
-            "cidade": "São Paulo",
-            "estado": "SP",
-            "cep": "01310-200",
+_RESULT_01_EXEMPLO = {
+    "textoEstado": "Finalizado",
+    "numeroMatricula": "123456789",
+    "textoMuitoGrande": _TEXTO_MUITO_GRANDE,
+    "produtos": [
+        {
+            "codigo": "P001",
+            "nome": "Notebook Dell",
+            "preco": "3500.00",
+            "categoria": "Eletronicos",
+            "estoque": "15",
+            "ativo": "true",
         },
+        {
+            "codigo": "P002",
+            "nome": "Mouse Logitech",
+            "preco": "150.00",
+            "categoria": "Perifericos",
+            "estoque": "42",
+            "ativo": "true",
+        },
+        {
+            "codigo": "P003",
+            "nome": "Teclado Mecanico",
+            "preco": "280.00",
+            "categoria": "Perifericos",
+            "estoque": "30",
+            "ativo": "false",
+        },
+        {
+            "codigo": "P004",
+            "nome": "Monitor LG 27pol",
+            "preco": "1350.00",
+            "categoria": "Monitores",
+            "estoque": "8",
+            "ativo": "true",
+        },
+        {
+            "codigo": "P006",
+            "nome": "Headset Sony",
+            "preco": "280.00",
+            "categoria": "Audio",
+            "estoque": "12",
+            "ativo": "true",
+        },
+    ],
+    "listaMuitosItens": _LISTA_MUITOS_ITENS,
+    "endereco": {
+        "rua": "Rua das Flores",
+        "numero": "456",
+        "bairro": "Jardim Primavera",
+        "cidade": "São Paulo",
+        "estado": "SP",
+        "cep": "01310-200",
     },
+}
+
+CASE_RESULTS: dict[str, dict] = {
+    "01_exemplo": _RESULT_01_EXEMPLO,
+    "02_exemplo": _RESULT_01_EXEMPLO,
 }
 
 

@@ -11,6 +11,24 @@ document.getElementById("edit-notes-btn").addEventListener("click", () => {
 
 const TRUNCATE_AT = 80;
 const _entries = [];
+let _currentFields = [];
+let _hideIgnored = true;
+
+const toggleIgnoredBtn = document.getElementById("toggle-ignored-btn");
+toggleIgnoredBtn.addEventListener("click", () => {
+  _hideIgnored = !_hideIgnored;
+
+  if (_hideIgnored) {
+    toggleIgnoredBtn.className = "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors";
+    toggleIgnoredBtn.innerHTML = '<i data-lucide="eye-off" class="w-3.5 h-3.5"></i> Ignorados ocultos';
+  } else {
+    toggleIgnoredBtn.className = "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors";
+    toggleIgnoredBtn.innerHTML = '<i data-lucide="eye" class="w-3.5 h-3.5"></i> Mostrar ignorados';
+  }
+
+  lucide.createIcons({ nodes: [toggleIgnoredBtn] });
+  renderFields(_currentFields);
+});
 
 const modal = document.getElementById("value-modal");
 const modalTitle = document.getElementById("modal-title");
@@ -138,8 +156,8 @@ function selectCase(item) {
   document.getElementById("empty-state").classList.add("hidden");
   document.getElementById("fields-table").classList.remove("hidden");
 
-  const fields = JSON.parse(item.dataset.fields);
-  renderFields(fields);
+  _currentFields = JSON.parse(item.dataset.fields);
+  renderFields(_currentFields);
 }
 
 function displayValue(v) {
@@ -425,8 +443,11 @@ function objectComparisonCell(expected, obtained) {
 function renderFields(fields) {
   _entries.length = 0;
   const tbody = document.getElementById("fields-body");
+  const visible = _hideIgnored
+    ? fields.filter((f) => !(f.breakdown && f.breakdown.ignored))
+    : fields;
 
-  tbody.innerHTML = fields
+  tbody.innerHTML = visible
     .map((f) => {
       const isIgnored = f.breakdown && f.breakdown.ignored;
       const isAcerto = f.status === "acerto";

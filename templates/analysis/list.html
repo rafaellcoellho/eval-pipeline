@@ -33,7 +33,7 @@
           <th class="px-4 py-3 w-10"></th>
           <th class="px-6 py-3 font-medium">ID</th>
           <th class="px-6 py-3 font-medium">Anotações</th>
-          <th class="px-6 py-3 font-medium">Casos</th>
+          <th class="px-6 py-3 font-medium">Exemplos</th>
           <th class="px-6 py-3 font-medium">Horário</th>
           <th class="px-6 py-3 font-medium">Acurácia</th>
           <th class="px-6 py-3 font-medium w-20 text-right">Ações</th>
@@ -53,7 +53,13 @@
             <span class="text-xs text-gray-600">—</span>
             {% endif %}
           </td>
-          <td class="px-6 py-3.5 text-gray-400">{{ session.case_count }}</td>
+          <td class="px-6 py-3.5">
+            <div class="flex flex-wrap gap-1">
+              {% for case in session.cases %}
+              <span class="inline-flex items-center text-xs px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 font-mono">{{ case }}</span>
+              {% endfor %}
+            </div>
+          </td>
           <td class="px-6 py-3.5 text-gray-400">{{ session.timestamp[:4] }}-{{ session.timestamp[4:6] }}-{{ session.timestamp[6:8] }} {{ session.timestamp[8:10] }}:{{ session.timestamp[10:12] }}</td>
           <td class="px-6 py-3.5">
             <div class="flex items-center gap-2">

@@ -2,7 +2,7 @@
 
 {% block title %}Análise {{ session.session_id }} — Eval Pipeline{% endblock %}
 {% block head %}<link rel="stylesheet" href="/static/css/analysis/session.css" />{% endblock %}
-{% block body_class %}flex flex-col{% endblock %}
+{% block body_class %}flex flex-col h-screen overflow-hidden{% endblock %}
 
 {% block header_back %}
 <a href="/analysis" class="text-gray-500 hover:text-gray-300 transition-colors">
@@ -23,6 +23,11 @@ Análise <span class="font-mono text-gray-400 font-normal">{{ session.session_id
 
 {% block header_actions %}
 <div class="flex items-center gap-2 ml-4">
+  <button id="toggle-ignored-btn"
+    class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors">
+    <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+    Ignorados ocultos
+  </button>
   <button id="edit-notes-btn"
     class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-gray-800 text-gray-400 hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors">
     <i data-lucide="pencil-line" class="w-3.5 h-3.5"></i>
