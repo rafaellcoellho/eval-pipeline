@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Query, Request
+from fastapi import APIRouter, Body, Request
 from fastapi.responses import HTMLResponse
 
 from eval_pipeline.utils.settings import get_settings
@@ -10,14 +10,6 @@ router = APIRouter()
 @router.get("/analysis", response_class=HTMLResponse)
 def analysis_list(request: Request) -> HTMLResponse:
     return AnalysisView(request).render_list()
-
-
-@router.get("/analysis/compare", response_class=HTMLResponse)
-def analysis_compare(
-    request: Request,
-    sessions: list[str] = Query(...),
-) -> HTMLResponse:
-    return AnalysisView(request).render_compare(sessions)
 
 
 @router.get("/analysis/{session_id}", response_class=HTMLResponse)

@@ -26,13 +26,6 @@ class AnalysisView:
             self.request, "analysis/session.html", {"session": data}
         )
 
-    def render_compare(self, session_ids: list[str]) -> HTMLResponse:
-        return get_templates().TemplateResponse(
-            self.request,
-            "analysis/compare.html",
-            {"comparison": self._compare_sessions(session_ids)},
-        )
-
     @staticmethod
     def _list_sessions() -> list[dict]:
         analysis_root = get_settings().path_data_files / "analysis"
@@ -181,76 +174,3 @@ class AnalysisView:
             if total_fields > 0
             else 0,
         }
-
-    @staticmethod
-    def _compare_sessions(session_ids: list[str]) -> dict:
-        analysis_root = get_settings().path_data_files / "analysis"
-
-        sessions_data: dict[str, dict] = {sid: {} for sid in session_ids}
-
-        for case_dir in sorted(analysis_root.iterdir()):
-            if not case_dir.is_dir():
-                continue
-            for session_id in session_ids:
-                matches = list(case_dir.glob(f"{session_id}_*.json"))
-                if matches:
-                    sessions_data[session_id][case_dir.name] = json.loads(
-                        matches[0].read_text()
-                    )
-
-        all_cases = sorted({case for sd in sessions_data.values() for case in sd})
-
-        rows = []
-        for case_name in all_cases:
-            all_campos = sorted(
-                {
-                    campo
-                    for sid in session_ids
-                    for campo in sessions_data[sid].get(case_name, {})
-                }
-            )
-            for campo in all_campos:
-                results = {}
-                valor_esperado = ""
-                for session_id in session_ids:
-                    field_data = sessions_data[session_id].get(case_name, {}).get(campo)
-                    if field_data:
-                        valor_esperado = field_data["valor_esperado"]
-                        results[session_id] = {
-                            "valor_obtido": field_data["valor_obtido"],
-                            "status": field_data["status"],
-                        }
-                    else:
-                        results[session_id] = {
-                            "valor_obtido": None,
-                            "status": "missing",
-                        }
-
-                rows.append(
-                    {
-                        "case_name": case_name,
-                        "campo": campo,
-                        "valor_esperado": valor_esperado,
-                        "results": results,
-                    }
-                )
-
-        sessions_summary = []
-        for session_id in session_ids:
-            total = sum(len(cd) for cd in sessions_data[session_id].values())
-            correct = sum(
-                1
-                for cd in sessions_data[session_id].values()
-                for v in cd.values()
-                if v["status"] == "acerto"
-            )
-            sessions_summary.append(
-                {
-                    "session_id": session_id,
-                    "accuracy_pct": round(correct / total * 100) if total > 0 else 0,
-                    "correct": correct,
-                    "total": total,
-                }
-            )
-
-        return {"sessions": sessions_summary, "session_ids": session_ids, "rows": rows}

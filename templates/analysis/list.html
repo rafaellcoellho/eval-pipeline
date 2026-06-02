@@ -13,20 +13,12 @@
 {% block content %}
 <main class="px-8 py-6">
   <div class="bg-gray-900 rounded-lg border border-gray-800 shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+    <div class="px-6 py-4 border-b border-gray-800 flex items-center">
       <h2 class="text-sm font-medium text-gray-300">Sessões Analisadas</h2>
-      <div class="flex items-center gap-3">
-        <span id="selected-count" class="text-xs text-gray-500 hidden">0 selecionadas</span>
-        <button id="compare-btn" disabled class="hidden inline-flex items-center gap-2 px-4 py-1.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium rounded-lg transition-colors">
-          <i data-lucide="git-compare" class="w-3.5 h-3.5"></i>
-          Comparar selecionadas
-        </button>
-      </div>
     </div>
     <table class="w-full text-sm text-left">
       <thead>
         <tr class="bg-gray-800/50 text-xs text-gray-500 uppercase tracking-wider">
-          <th class="px-4 py-3 w-10"></th>
           <th class="px-6 py-3 font-medium">ID</th>
           <th class="px-6 py-3 font-medium">Anotações</th>
           <th class="px-6 py-3 font-medium">Casos</th>
@@ -38,9 +30,6 @@
       <tbody>
         {% for session in sessions %}
         <tr class="border-t border-gray-800 transition-colors duration-100 hover:bg-gray-800/30">
-          <td class="px-4 py-3 text-center">
-            <input type="checkbox" class="session-checkbox w-4 h-4 rounded accent-violet-500" value="{{ session.session_id }}" />
-          </td>
           <td class="px-6 py-3.5 font-mono text-gray-300">{{ session.session_id }}</td>
           <td class="px-6 py-3.5 max-w-xs">
             {% if session.notes %}
@@ -79,7 +68,7 @@
         {% endfor %}
         {% if not sessions %}
         <tr>
-          <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-500">Nenhuma análise encontrada. Execute o pipeline para gerar análises.</td>
+          <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500">Nenhuma análise encontrada. Execute o pipeline para gerar análises.</td>
         </tr>
         {% endif %}
       </tbody>
