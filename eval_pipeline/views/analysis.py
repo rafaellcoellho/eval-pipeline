@@ -1,4 +1,5 @@
 import json
+import shutil
 
 from fastapi import HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -174,3 +175,31 @@ class AnalysisView:
             if total_fields > 0
             else 0,
         }
+
+    @staticmethod
+    def delete_session(session_id: str) -> None:
+        settings = get_settings()
+        analysis_root = settings.path_data_files / "analysis"
+        processed_root = settings.path_data_files / "processed"
+
+        for root in (analysis_root, processed_root):
+            if not root.exists():
+                continue
+            for case_dir in root.iterdir():
+                if case_dir.is_dir():
+                    for f in case_dir.glob(f"{session_id}_*.json"):
+                        f.unlink()
+
+        notes_path = analysis_root / f"{session_id}.txt"
+        if notes_path.exists():
+            notes_path.unlink()
+
+    @staticmethod
+    def delete_all_sessions() -> None:
+        settings = get_settings()
+
+        for subdir in ("analysis", "processed"):
+            path = settings.path_data_files / subdir
+            if path.exists():
+                shutil.rmtree(path)
+                path.mkdir()

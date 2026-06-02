@@ -12,9 +12,21 @@ def analysis_list(request: Request) -> HTMLResponse:
     return AnalysisView(request).render_list()
 
 
+@router.delete("/analysis")
+def delete_all_analyses() -> dict:
+    AnalysisView.delete_all_sessions()
+    return {"ok": True}
+
+
 @router.get("/analysis/{session_id}", response_class=HTMLResponse)
 def analysis_session(request: Request, session_id: str) -> HTMLResponse:
     return AnalysisView(request).render_session(session_id)
+
+
+@router.delete("/analysis/{session_id}")
+def delete_analysis(session_id: str) -> dict:
+    AnalysisView.delete_session(session_id)
+    return {"ok": True}
 
 
 @router.put("/analysis/{session_id}/notes")
