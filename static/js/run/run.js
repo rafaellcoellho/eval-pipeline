@@ -85,6 +85,19 @@ function startPolling() {
   const caseStartTimes = {};
   const caseEndTimes = {};
 
+  const sessionStart = Date.now();
+  let sessionEnd = null;
+  const totalTimerEl = document.getElementById("total-timer");
+
+  setInterval(() => {
+    if (!totalTimerEl) return;
+    const elapsed = Math.floor(((sessionEnd ?? Date.now()) - sessionStart) / 1000);
+    const m = Math.floor(elapsed / 60);
+    const s = elapsed % 60;
+    totalTimerEl.innerHTML = `<i data-lucide="timer" class="w-3 h-3"></i> ${m}:${s.toString().padStart(2, "0")}`;
+    lucide.createIcons({ nodes: [totalTimerEl] });
+  }, 1000);
+
   setInterval(() => {
     for (const [caseName, startTime] of Object.entries(caseStartTimes)) {
       const row = document.querySelector(`.case-row[data-case="${caseName}"]`);
@@ -119,6 +132,7 @@ function startPolling() {
 
     if (data.overall === "done" || data.overall === "error" || data.overall === "cancelled") {
       clearInterval(interval);
+      sessionEnd = Date.now();
       showOverallDone(data.overall);
     }
   }, 2000);
@@ -151,8 +165,9 @@ function showOverallDone(overall) {
 
   if (overall === "done") {
     document.getElementById("overall-check").classList.remove("hidden");
-    document.getElementById("done-banner").classList.remove("hidden");
-    setTimeout(() => { window.location.href = "/run"; }, 1500);
+    const banner = document.getElementById("done-banner");
+    banner.classList.remove("hidden");
+    lucide.createIcons({ nodes: Array.from(banner.querySelectorAll("[data-lucide]")) });
   } else if (overall === "cancelled") {
     document.getElementById("overall-error").classList.remove("hidden");
     const banner = document.getElementById("cancelled-banner");

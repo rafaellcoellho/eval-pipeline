@@ -344,12 +344,10 @@ def consultar_resultado(body: ConsultarResultadoRequest) -> dict:
     delay = CASE_DELAYS.get(entry["case_name"], 5)
     ratio = elapsed / delay
 
-    if ratio < 0.3:
+    if ratio < 0.5:
         return {"textoEstado": "Na fila"}
-    if ratio < 0.6:
-        return {"textoEstado": "Iniciado"}
     if ratio < 1.0:
-        return {"textoEstado": "Aguardando nova tentativa"}
+        return {"textoEstado": "Iniciado"}
 
     case_name = entry["case_name"]
 
